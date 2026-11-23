@@ -125,6 +125,7 @@ export const messages = {
   "marketplace.app.discordTagline": "אזכורים והודעות ישירות ב-Discord",
   "marketplace.app.telegramTagline": "קבוצות וצ'אטים ישירים ב-Telegram",
   "marketplace.app.whatsappTagline": "הצ'אט שלך והאנשים שאישרת ב-WhatsApp",
+  "marketplace.app.lineTagline": "צ'אטים ישירים עם האנשים שאישרת ב-LINE",
   "marketplace.app.bitwardenTagline": "התחברות לאתרים עם פרטי כניסה מתיקייה משותפת",
   "marketplace.app.protonPassTagline": "התחברות לאתרים עם פרטי כניסה מכספת משותפת",
   "marketplace.app.onePasswordCategory": "ניהול כניסות ופרטי גישה",

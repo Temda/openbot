@@ -8,6 +8,7 @@ export const CONNECTOR_IDS = [
   "discord",
   "telegram",
   "whatsapp",
+  "line",
   "github",
   "onepassword",
   "bitwarden",

@@ -123,6 +123,7 @@ export const messages = {
   "marketplace.app.discordTagline": "Упоминания и личные сообщения в Discord",
   "marketplace.app.telegramTagline": "Группы и личные чаты в Telegram",
   "marketplace.app.whatsappTagline": "Свой чат и разрешённые люди в WhatsApp",
+  "marketplace.app.lineTagline": "Личные чаты с одобренными вами людьми в LINE",
   "marketplace.app.bitwardenTagline": "Вход на сайты с учётными данными из общей папки",
   "marketplace.app.protonPassTagline": "Вход на сайты с учётными данными из общего хранилища",
   "marketplace.app.onePasswordCategory": "Управление логинами и учётными данными",

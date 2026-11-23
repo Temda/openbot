@@ -97,6 +97,7 @@ export const messages = {
   "marketplace.app.discordTagline": "Discord 中的提及和私信",
   "marketplace.app.telegramTagline": "Telegram 中的群组和私聊",
   "marketplace.app.whatsappTagline": "WhatsApp 中你自己的聊天和你允许的人",
+  "marketplace.app.lineTagline": "在 LINE 中与你批准的人直接聊天",
   "marketplace.app.bitwardenTagline": "用共享文件夹中的登录信息登录网站",
   "marketplace.app.protonPassTagline": "用共享保管库中的登录信息登录网站",
   "marketplace.app.onePasswordCategory": "登录与凭据管理",

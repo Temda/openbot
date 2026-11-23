@@ -41,6 +41,7 @@ export function createConnectorActions(failed: AppTextKey, connector: ConnectorI
     options: {
       waits?: boolean;
       done?: (result: T) => void;
+      onError?: (error: unknown) => void;
       settled?: () => void;
       track?: ConnectorAnalyticsAction;
     } = {},
@@ -58,7 +59,8 @@ export function createConnectorActions(failed: AppTextKey, connector: ConnectorI
       .catch((error: unknown) => {
         if (track) desktopAnalytics.track("connector_action", { connector, action: track, result: "failed" });
         if (disposed || current !== attempt) return;
-        report(error);
+        if (options.onError) options.onError(error);
+        else report(error);
       })
       .finally(() => {
         if (disposed || current !== attempt) return;

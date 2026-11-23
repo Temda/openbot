@@ -56,4 +56,9 @@ export const messages = {
     "短时间内收到的消息太多，OpenBot 已在此暂停回复 10 分钟。如果此号码还关联了另一个 OpenBot，请在手机上的 WhatsApp 中打开“已关联设备”，然后退出你不用的 OpenBot。",
   "status.messaging.whatsappOrchestratorName": "WhatsApp 调度助手",
   "status.messaging.whatsappOrchestratorTitle": "在 WhatsApp 中回答并调度团队",
+  "status.messaging.lineNoAgent": "这里还没有可以回答的助手。请在 OpenBot 中添加 LINE 调度助手。",
+  "status.messaging.linePairingNotice":
+    "该账号只回答其所有者允许的人。所有者已收到你的请求。请在所有者批准后再发消息。",
+  "status.messaging.lineOrchestratorName": "LINE 调度助手",
+  "status.messaging.lineOrchestratorTitle": "在 LINE 中回答并调度团队",
 } as const satisfies PartialTranslation<typeof source>;

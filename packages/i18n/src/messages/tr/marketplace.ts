@@ -111,6 +111,7 @@ export const messages = {
   "marketplace.app.discordTagline": "Discord'da bahsetmeler ve doğrudan mesajlar",
   "marketplace.app.telegramTagline": "Telegram'da gruplar ve doğrudan sohbetler",
   "marketplace.app.whatsappTagline": "WhatsApp'ta kendi sohbetiniz ve izin verdiğiniz kişiler",
+  "marketplace.app.lineTagline": "LINE'da onayladığınız kişilerle birebir sohbetler",
   "marketplace.app.bitwardenTagline": "Paylaşılan bir klasördeki oturum bilgileriyle sitelerde oturum açın",
   "marketplace.app.protonPassTagline": "Paylaşılan bir kasadaki oturum bilgileriyle sitelerde oturum açın",
   "marketplace.app.onePasswordCategory": "Oturum açma ve kimlik bilgisi yönetimi",

@@ -21,5 +21,12 @@ export const messages = {
   "error.messaging.whatsappTooManySenders": "一个 WhatsApp 号码最多可允许 200 个联系人和群组。",
   "error.messaging.whatsappNumberNotFound": "此号码没有 WhatsApp 账号。请连同国家代码一起输入，例如 +44 7700 900123。",
   "error.messaging.whatsappRequestEnded": "该请求已结束。请让对方重新发消息以获取新代码。",
+  "error.messaging.lineNotConnected": "该 LINE 账号未连接。",
+  "error.messaging.lineUnsupported": "这台电脑无法连接 LINE。",
+  "error.messaging.lineInvalidToken": "LINE 不接受该 Channel access token。请从 LINE Developers Console 重新复制。",
+  "error.messaging.lineUnreachable": "OpenBot 现在无法连接 LINE。请检查网络连接后重试。",
+  "error.messaging.lineTooManySenders": "一个 LINE 账号最多可允许 200 个人。",
+  "error.messaging.lineRequestEnded": "该请求已结束。请让对方重新发消息。",
+  "error.messaging.linePublicUrlInvalid": "请输入以 https:// 开头的地址，例如 https://example.com。",
   "error.messaging.memoryLimit": "一个已连接的工作区最多可有 {limit} 条记忆，请先删除一条。",
 } as const satisfies PartialTranslation<typeof source>;

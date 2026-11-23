@@ -638,4 +638,121 @@ export const messages = {
     "OpenBot verwijdert zijn toegangssleutel op {host}. De kluis en de logins erin blijven in je Proton-account.",
   "connector.protonPass.disconnect": "Loskoppelen",
   "connector.protonPass.actionFailed": "OpenBot kon de Proton Pass-verbinding niet wijzigen.",
+  "connector.line.title": "LINE",
+  "connector.line.description":
+    "Koppel een LINE Official Account aan deze computer. De LINE Orchestrator vraagt de juiste agent en antwoordt.",
+  "connector.line.statusConnected": "Verbonden",
+  "connector.line.statusAttention": "Aandacht nodig",
+  "connector.line.summaryConnected": {
+    one: "{count} account · LINE Orchestrator antwoordt",
+    other: "{count} accounts · LINE Orchestrator antwoordt",
+  },
+  "connector.line.summaryNoAgent": {
+    one: "{count} account · Nog geen agent antwoordt",
+    other: "{count} accounts · Nog geen agent antwoordt",
+  },
+  "connector.line.attentionTitle": {
+    one: "{count} account heeft aandacht nodig",
+    other: "{count} accounts hebben aandacht nodig",
+  },
+  "connector.line.attentionDescription": "De status hieronder zegt wat je moet doen.",
+  "connector.line.connect": "Koppel LINE",
+  "connector.line.addAgent": "Agent toevoegen",
+  "connector.line.actionFailed": "LINE heeft de wijziging niet geaccepteerd",
+  "connector.line.connectTitle": "Koppel een LINE Official Account",
+  "connector.line.connectDescription":
+    "OpenBot heeft twee waarden nodig van het Messaging API-kanaal van je account in de LINE Developers Console.",
+  "connector.line.connectStepOpen": "Open de LINE Developers Console en kies je Messaging API-kanaal",
+  "connector.line.connectStepToken": "Geef op het tabblad “Messaging API” een Channel access token uit",
+  "connector.line.connectStepSecret": "Kopieer op het tabblad “Basic settings” de Channel secret",
+  "connector.line.connectWaiting": "Het account controleren bij LINE…",
+  "connector.line.tokenLabel": "Channel access token",
+  "connector.line.secretLabel": "Channel secret",
+  "connector.line.credentialsNote":
+    "OpenBot slaat beide waarden versleuteld op deze computer op. Het toont ze niet opnieuw.",
+  "connector.line.credentialInvalid":
+    "Kopieer beide waarden opnieuw uit de LINE Developers Console. Ze bevatten geen spaties.",
+  "connector.line.accountsTitle": "Accounts",
+  "connector.line.accountNote": "Mensen die je goedkeurt kunnen in LINE naar dit account schrijven.",
+  "connector.line.helpInvalidToken":
+    "LINE heeft de opgeslagen Channel access token niet geaccepteerd. Koppel het account los en koppel het daarna opnieuw.",
+  "connector.line.helpKeysUnreadable":
+    "OpenBot kan de opgeslagen waarden van dit account niet lezen. Koppel het account los en koppel het daarna opnieuw.",
+  "connector.line.helpError":
+    "OpenBot kan LINE voor dit account niet bereiken. Verbind opnieuw of koppel het account los.",
+  "connector.line.retryAt": "LINE vroeg OpenBot te wachten. Het probeert het opnieuw om {time}.",
+  "connector.line.pause": "Pauzeren",
+  "connector.line.resume": "Hervatten",
+  "connector.line.reconnect": "Opnieuw verbinden",
+  "connector.line.disconnect": "Verbreken",
+  "connector.line.disconnectAllTitle": "LINE loskoppelen",
+  "connector.line.disconnectAllSummary":
+    "Elk account wordt losgekoppeld. Mensen kunnen je agents niet meer bereiken via LINE.",
+  "connector.line.disconnectAllSummaryOrchestrator":
+    "Elk account wordt losgekoppeld. De LINE Orchestrator en zijn gesprekken worden uit OpenBot verwijderd.",
+  "connector.line.rowAction": "{action}: {name}",
+  "connector.line.orchestratorTitle": "LINE Orchestrator",
+  "connector.line.orchestratorDescription":
+    "Deze agent ontvangt de berichten voor OpenBot van je LINE-accounts. Korte berichten beantwoordt hij zelf, ander werk geeft hij aan de juiste agent, en hij antwoordt in LINE.",
+  "connector.line.orchestratorNone": "Nog geen agent antwoordt",
+  "connector.line.orchestratorNoneDescription": "Voeg de LINE Orchestrator toe, anders krijgt LINE geen antwoord.",
+  "connector.line.note": "Mensen schrijven naar je LINE Official Account. Ze hebben eerst je goedkeuring nodig.",
+  "connector.line.agentStepTitle": "Voeg de LINE Orchestrator toe",
+  "connector.line.agentStepDescription":
+    "Deze nieuwe agent beantwoordt de berichten voor OpenBot op {account} en op elk account dat je later koppelt.",
+  "connector.line.orchestratorName": "LINE Orchestrator",
+  "connector.line.orchestratorRole": "Antwoordt in LINE en vraagt het team",
+  "connector.line.orchestratorDoesReceive": "Ontvangt elk LINE-bericht voor OpenBot als eerste",
+  "connector.line.orchestratorDoesDelegate": "Geeft elke taak aan de agent die het best past",
+  "connector.line.orchestratorDoesAnswer": "Antwoordt in de LINE-chat",
+  "connector.line.orchestratorModel": "Model",
+  "connector.line.disconnectTitle": "{account} loskoppelen?",
+  "connector.line.disconnectDescription":
+    "OpenBot verwijdert de opgeslagen waarden van {account} en stopt de webhook-listener. Het webhookadres blijft in de LINE Developers Console staan tot je het daar wijzigt.",
+  "connector.line.disconnectEffect": "Mensen kunnen je agents niet meer bereiken via {account}.",
+  "connector.line.removeEffectKept": "De gesprekken en de LINE Orchestrator blijven in OpenBot.",
+  "connector.line.removeEffectDeleted":
+    "Dit is het laatste account, dus de LINE Orchestrator en zijn gesprekken worden uit OpenBot verwijderd.",
+  "connector.line.keep": "Gekoppeld houden",
+  "connector.line.close": "Sluiten",
+  "connector.line.webhookTitle": "Webhook van {account}",
+  "connector.line.webhookDescription":
+    "LINE stuurt elk bericht naar een openbaar HTTPS-adres. OpenBot luistert alleen op deze computer, dus een tunnel moet de berichten doorsturen.",
+  "connector.line.localAddress": "Lokaal webhookadres",
+  "connector.line.copyAddress": "Adres kopiëren",
+  "connector.line.webhookStepTunnel":
+    "Start een openbare HTTPS-tunnel, zoals Cloudflare Tunnel of ngrok, die doorstuurt naar het lokale adres. OpenBot maakt de tunnel niet.",
+  "connector.line.webhookStepSave":
+    "Typ hieronder het openbare HTTPS-adres van de tunnel en kies Opslaan. OpenBot stelt het in als webhook in LINE en test het.",
+  "connector.line.webhookStepEnable": "Zet in de LINE Developers Console Use webhook aan.",
+  "connector.line.publicUrlLabel": "Openbaar HTTPS-adres",
+  "connector.line.publicUrlDescription": "Zoals https://example.com. OpenBot voegt /line/webhook toe.",
+  "connector.line.clearUrl": "Wissen",
+  "connector.line.webhookVerified": "Webhook geverifieerd",
+  "connector.line.webhookVerifiedDetail": "LINE heeft OpenBot bereikt via het openbare adres.",
+  "connector.line.webhookUnknown": "Webhook niet getest",
+  "connector.line.webhookUnknownNoUrl": "Sla het openbare adres op om de webhook in te stellen en te testen.",
+  "connector.line.webhookUnknownUrl":
+    "OpenBot heeft nog niet gezien dat LINE de webhook bereikt. Sla het adres opnieuw op om het te testen.",
+  "connector.line.webhookFailed": "Webhook mislukt",
+  "connector.line.webhookFailedReason":
+    "LINE kon OpenBot niet bereiken. Controleer of de tunnel draait en doorstuurt naar het lokale adres. Reden: {reason}",
+  "connector.line.webhookFailedNoReason":
+    "LINE kon OpenBot niet bereiken. Controleer of de tunnel draait en doorstuurt naar het lokale adres.",
+  "connector.line.onlineNote": "LINE werkt alleen zolang deze computer en de tunnel aan staan.",
+  "connector.line.quotaTitle": "Maandelijkse berichtlimiet bereikt",
+  "connector.line.quotaDescription":
+    "Antwoorden die langer dan ongeveer een minuut duren, worden als pushberichten verstuurd en LINE telt ze mee. Die antwoorden mislukken tot de limiet wordt gereset.",
+  "connector.line.sendersTitle": "Goedgekeurde mensen van {account}",
+  "connector.line.sendersDescription": "Deze mensen kunnen werk geven aan je agents.",
+  "connector.line.sendersEmpty": "Nog niemand is goedgekeurd.",
+  "connector.line.sendersLimit": "Een account kan maximaal {count} mensen toestaan.",
+  "connector.line.unnamedPerson": "LINE-gebruiker",
+  "connector.line.requestsTitle": "Verzoeken voor {account}",
+  "connector.line.requestsDescription":
+    "Een persoon die voor het eerst naar dit account schrijft, moet hier worden goedgekeurd. De persoon krijgt één bericht.",
+  "connector.line.requestsEmpty": "Geen verzoek wacht op goedkeuring.",
+  "connector.line.requestExpires": "Wacht tot {time}",
+  "connector.line.approve": "Goedkeuren",
+  "connector.line.deny": "Weigeren",
 } as const satisfies PartialTranslation<typeof source>;

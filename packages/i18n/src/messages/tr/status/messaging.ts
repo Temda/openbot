@@ -60,4 +60,10 @@ export const messages = {
     "OpenBot burada 10 dakika yanıt vermeyi durdurdu: kısa sürede çok fazla mesaj geldi. Bu numaraya başka bir OpenBot da bağlıysa telefonundaki WhatsApp'ta Bağlı cihazlar'ı aç ve kullanmadığın OpenBot'tan çıkış yap.",
   "status.messaging.whatsappOrchestratorName": "WhatsApp Düzenleyicisi",
   "status.messaging.whatsappOrchestratorTitle": "WhatsApp'ta yanıt verir ve ekibe sorar",
+  "status.messaging.lineNoAgent":
+    "Burada henüz yanıt verebilecek bir ajan yok. OpenBot'ta LINE Düzenleyicisini ekleyin.",
+  "status.messaging.linePairingNotice":
+    "Bu hesap yalnızca sahibinin izin verdiği kişilere yanıt verir. Sahibi isteğinizi aldı. Sahibi onayladıktan sonra tekrar yazın.",
+  "status.messaging.lineOrchestratorName": "LINE Düzenleyicisi",
+  "status.messaging.lineOrchestratorTitle": "LINE'da yanıt verir ve ekibe sorar",
 } as const satisfies PartialTranslation<typeof source>;

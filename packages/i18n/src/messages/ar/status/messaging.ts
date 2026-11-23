@@ -57,4 +57,9 @@ export const messages = {
     "توقّف OpenBot عن الرد هنا لمدة 10 دقائق: وصلت رسائل كثيرة جدًا في وقت قصير. إذا كان OpenBot آخر مرتبطًا بهذا الرقم، فافتح الأجهزة المرتبطة في واتساب على هاتفك وسجّل الخروج من OpenBot الذي لا تستخدمه.",
   "status.messaging.whatsappOrchestratorName": "WhatsApp Orchestrator",
   "status.messaging.whatsappOrchestratorTitle": "يجيب في WhatsApp ويسأل الفريق",
+  "status.messaging.lineNoAgent": "لا يوجد وكيل يستطيع الإجابة هنا بعد. أضف LINE Orchestrator في OpenBot.",
+  "status.messaging.linePairingNotice":
+    "يجيب هذا الحساب عن الأشخاص الذين سمح لهم مالكه فقط. وصل طلبك إلى المالك. اكتب مرة أخرى بعد أن يوافق عليه.",
+  "status.messaging.lineOrchestratorName": "LINE Orchestrator",
+  "status.messaging.lineOrchestratorTitle": "يجيب في LINE ويسأل الفريق",
 } as const satisfies PartialTranslation<typeof source>;

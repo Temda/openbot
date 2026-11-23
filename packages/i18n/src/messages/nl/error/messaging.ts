@@ -25,6 +25,15 @@ export const messages = {
     "Dit nummer heeft geen WhatsApp-account. Typ het met de landcode, zoals +44 7700 900123.",
   "error.messaging.whatsappRequestEnded":
     "Dit verzoek is beëindigd. Vraag de persoon opnieuw te schrijven voor een nieuwe code.",
+  "error.messaging.lineNotConnected": "Dit LINE-account is niet verbonden.",
+  "error.messaging.lineUnsupported": "Deze computer kan geen verbinding maken met LINE.",
+  "error.messaging.lineInvalidToken":
+    "LINE heeft de Channel access token niet geaccepteerd. Kopieer hem opnieuw uit de LINE Developers Console.",
+  "error.messaging.lineUnreachable":
+    "OpenBot kan LINE nu niet bereiken. Controleer de internetverbinding en probeer het opnieuw.",
+  "error.messaging.lineTooManySenders": "Een LINE-account kan maximaal 200 mensen toestaan.",
+  "error.messaging.lineRequestEnded": "Dit verzoek is beëindigd. Vraag de persoon opnieuw te schrijven.",
+  "error.messaging.linePublicUrlInvalid": "Voer een adres in dat met https:// begint, zoals https://example.com.",
   "error.messaging.memoryLimit":
     "Een verbonden werkruimte kan maximaal {limit} herinneringen hebben. Verwijder er eerst een.",
 } as const satisfies PartialTranslation<typeof source>;

@@ -89,6 +89,7 @@
     "./web-messaging-install": "./src/web-messaging-install.ts",
     "./telegram-app": "./src/telegram-app.ts",
     "./whatsapp-app": "./src/whatsapp-app.ts",
+    "./line-app": "./src/line-app.ts",
     "./team-api-routes": "./src/team-api-routes.ts",
     "./two-step-code": "./src/two-step-code.ts",
     "./ui-blocks": "./src/ui-blocks.ts",

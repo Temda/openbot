@@ -50,8 +50,19 @@ export function WhatsAppMark(props: { class?: string | undefined }) {
   );
 }
 
+const LINE_MARK_PATH =
+  "M12 2C6.48 2 2 5.6 2 10.05c0 3.9 3.45 7.18 8.1 7.8.32.07.75.21.86.48.1.25.07.64.03.9l-.14.84c-.04.25-.2.98.86.54 1.06-.44 5.7-3.36 7.78-5.75C20.9 13.2 22 11.7 22 10.05 22 5.6 17.52 2 12 2Z";
+
 const X_MARK_PATH =
   "M17.5 3h3.2l-7 8 8.2 10h-6.4l-5-6.5L4.7 21H1.5l7.5-8.5L1.1 3h6.5l4.5 6 5.4-6Zm-1.1 16h1.8L7.6 4.9H5.7L16.4 19Z";
+
+export function LineMark(props: { class?: string | undefined }) {
+  return (
+    <svg class={props.class} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d={LINE_MARK_PATH} />
+    </svg>
+  );
+}
 
 export function XMark(props: { class?: string | undefined }) {
   return (
@@ -111,6 +122,14 @@ export function WhatsAppTile() {
   return (
     <BrandTile background="#25D366">
       <path d={WHATSAPP_MARK_PATH} fill="#FFFFFF" />
+    </BrandTile>
+  );
+}
+
+export function LineTile() {
+  return (
+    <BrandTile background="#06C755">
+      <path d={LINE_MARK_PATH} fill="#FFFFFF" />
     </BrandTile>
   );
 }

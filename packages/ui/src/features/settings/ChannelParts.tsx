@@ -71,14 +71,14 @@ export interface ChannelText {
   title: AppTextKey;
   description: AppTextKey;
   connect: AppTextKey;
-  attentionTitle: `connector.${Exclude<MessagingPlatform, "line">}.attentionTitle`;
+  attentionTitle: `connector.${MessagingPlatform}.attentionTitle`;
   attentionDescription: AppTextKey;
   disconnectAllTitle: AppTextKey;
   disconnect: AppTextKey;
   reconnect: AppTextKey;
   pause: AppTextKey;
   resume: AppTextKey;
-  rowAction: `connector.${Exclude<MessagingPlatform, "line">}.rowAction`;
+  rowAction: `connector.${MessagingPlatform}.rowAction`;
   addAgent: AppTextKey;
   orchestratorTitle: AppTextKey;
   orchestratorDescription: AppTextKey;

@@ -622,4 +622,119 @@ export const messages = defineMessages("connector", {
     "OpenBot deletes its access key on {host}. The vault and its logins stay in your Proton account.",
   "connector.protonPass.disconnect": "Disconnect",
   "connector.protonPass.actionFailed": "OpenBot could not change the Proton Pass connection.",
+  "connector.line.title": "LINE",
+  "connector.line.description":
+    "Connect a LINE Official Account to this computer. The LINE Orchestrator asks the right agent and answers.",
+  "connector.line.statusConnected": "Connected",
+  "connector.line.statusAttention": "Needs attention",
+  "connector.line.summaryConnected": {
+    one: "{count} account · LINE Orchestrator answers",
+    other: "{count} accounts · LINE Orchestrator answers",
+  },
+  "connector.line.summaryNoAgent": {
+    one: "{count} account · No agent answers yet",
+    other: "{count} accounts · No agent answers yet",
+  },
+  "connector.line.attentionTitle": {
+    one: "{count} account needs attention",
+    other: "{count} accounts need attention",
+  },
+  "connector.line.attentionDescription": "The status below says what to do.",
+  "connector.line.connect": "Connect LINE",
+  "connector.line.addAgent": "Add agent",
+  "connector.line.actionFailed": "LINE did not accept the change",
+  "connector.line.connectTitle": "Connect a LINE Official Account",
+  "connector.line.connectDescription":
+    "OpenBot needs two values from the Messaging API channel of your account in the LINE Developers Console.",
+  "connector.line.connectStepOpen": "Open the LINE Developers Console and select your Messaging API channel",
+  "connector.line.connectStepToken": "On the Messaging API tab, issue a Channel access token",
+  "connector.line.connectStepSecret": "On the Basic settings tab, copy the Channel secret",
+  "connector.line.connectWaiting": "Checking the account with LINE…",
+  "connector.line.tokenLabel": "Channel access token",
+  "connector.line.secretLabel": "Channel secret",
+  "connector.line.credentialsNote":
+    "OpenBot saves both values encrypted on this computer. It does not show them again.",
+  "connector.line.credentialInvalid": "Copy both values again from the LINE Developers Console. They have no spaces.",
+  "connector.line.accountsTitle": "Accounts",
+  "connector.line.accountNote": "People that you approve can write to this account in LINE.",
+  "connector.line.helpInvalidToken":
+    "LINE did not accept the saved Channel access token. Disconnect the account, then connect it again.",
+  "connector.line.helpKeysUnreadable":
+    "OpenBot cannot read the saved values of this account. Disconnect the account, then connect it again.",
+  "connector.line.helpError": "OpenBot cannot reach LINE for this account. Reconnect, or disconnect the account.",
+  "connector.line.retryAt": "LINE asked OpenBot to wait. It tries again at {time}.",
+  "connector.line.pause": "Pause",
+  "connector.line.resume": "Resume",
+  "connector.line.reconnect": "Reconnect",
+  "connector.line.disconnect": "Disconnect",
+  "connector.line.disconnectAllTitle": "Disconnect LINE",
+  "connector.line.disconnectAllSummary":
+    "Every account disconnects. People can no longer reach your agents through LINE.",
+  "connector.line.disconnectAllSummaryOrchestrator":
+    "Every account disconnects. The LINE Orchestrator and its conversations are deleted from OpenBot.",
+  "connector.line.rowAction": "{action}: {name}",
+  "connector.line.orchestratorTitle": "LINE Orchestrator",
+  "connector.line.orchestratorDescription":
+    "This agent receives the messages for OpenBot from your LINE accounts. It answers short ones itself, gives other work to the right agent, and answers in LINE.",
+  "connector.line.orchestratorNone": "No agent answers yet",
+  "connector.line.orchestratorNoneDescription": "Add the LINE Orchestrator, or LINE gets no answer.",
+  "connector.line.note": "People write to your LINE Official Account. They need your approval first.",
+  "connector.line.agentStepTitle": "Add the LINE Orchestrator",
+  "connector.line.agentStepDescription":
+    "This new agent answers the messages for OpenBot on {account} and on each account that you connect later.",
+  "connector.line.orchestratorName": "LINE Orchestrator",
+  "connector.line.orchestratorRole": "Answers in LINE and asks the team",
+  "connector.line.orchestratorDoesReceive": "Receives every LINE message for OpenBot first",
+  "connector.line.orchestratorDoesDelegate": "Gives each task to the agent that fits best",
+  "connector.line.orchestratorDoesAnswer": "Answers in the LINE chat",
+  "connector.line.orchestratorModel": "Model",
+  "connector.line.disconnectTitle": "Disconnect {account}?",
+  "connector.line.disconnectDescription":
+    "OpenBot deletes the saved values of {account} and stops its webhook listener. The webhook address stays in the LINE Developers Console until you change it there.",
+  "connector.line.disconnectEffect": "People can no longer reach your agents through {account}.",
+  "connector.line.removeEffectKept": "The conversations and the LINE Orchestrator stay in OpenBot.",
+  "connector.line.removeEffectDeleted":
+    "This is the last account, so the LINE Orchestrator and its conversations are deleted from OpenBot.",
+  "connector.line.keep": "Keep connected",
+  "connector.line.close": "Close",
+  "connector.line.webhookTitle": "Webhook of {account}",
+  "connector.line.webhookDescription":
+    "LINE sends each message to a public HTTPS address. OpenBot listens only on this computer, so a tunnel must pass the messages on.",
+  "connector.line.localAddress": "Local webhook address",
+  "connector.line.copyAddress": "Copy address",
+  "connector.line.webhookStepTunnel":
+    "Start a public HTTPS tunnel, such as Cloudflare Tunnel or ngrok, that forwards to the local address. OpenBot does not make the tunnel.",
+  "connector.line.webhookStepSave":
+    "Type the public HTTPS address of the tunnel below, then select Save. OpenBot sets it as the webhook in LINE and tests it.",
+  "connector.line.webhookStepEnable": "In the LINE Developers Console, turn on Use webhook.",
+  "connector.line.publicUrlLabel": "Public HTTPS address",
+  "connector.line.publicUrlDescription": "Such as https://example.com. OpenBot adds /line/webhook.",
+  "connector.line.clearUrl": "Clear",
+  "connector.line.webhookVerified": "Webhook verified",
+  "connector.line.webhookVerifiedDetail": "LINE reached OpenBot through the public address.",
+  "connector.line.webhookUnknown": "Webhook not tested",
+  "connector.line.webhookUnknownNoUrl": "Save the public address to set and test the webhook.",
+  "connector.line.webhookUnknownUrl":
+    "OpenBot has not seen LINE reach the webhook yet. Save the address again to test it.",
+  "connector.line.webhookFailed": "Webhook failed",
+  "connector.line.webhookFailedReason":
+    "LINE could not reach OpenBot. Check that the tunnel runs and forwards to the local address. Reason: {reason}",
+  "connector.line.webhookFailedNoReason":
+    "LINE could not reach OpenBot. Check that the tunnel runs and forwards to the local address.",
+  "connector.line.onlineNote": "LINE works only while this computer and the tunnel are on.",
+  "connector.line.quotaTitle": "Monthly message limit reached",
+  "connector.line.quotaDescription":
+    "Answers that take more than about one minute are sent as push messages, and LINE counts them. Those answers fail until the limit resets.",
+  "connector.line.sendersTitle": "Approved people of {account}",
+  "connector.line.sendersDescription": "These people can give work to your agents.",
+  "connector.line.sendersEmpty": "No one is approved yet.",
+  "connector.line.sendersLimit": "An account can allow up to {count} people.",
+  "connector.line.unnamedPerson": "LINE user",
+  "connector.line.requestsTitle": "Requests to {account}",
+  "connector.line.requestsDescription":
+    "A person who writes to this account for the first time must be approved here. The person gets one notice.",
+  "connector.line.requestsEmpty": "No request waits for approval.",
+  "connector.line.requestExpires": "Waits until {time}",
+  "connector.line.approve": "Approve",
+  "connector.line.deny": "Refuse",
 });

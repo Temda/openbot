@@ -25,5 +25,14 @@ export const messages = {
   "error.messaging.whatsappNumberNotFound":
     "Bu numaranın WhatsApp hesabı yok. Numarayı ülke koduyla yazın, örneğin +44 7700 900123.",
   "error.messaging.whatsappRequestEnded": "Bu istek sona erdi. Yeni bir kod için kişiden tekrar yazmasını isteyin.",
+  "error.messaging.lineNotConnected": "Bu LINE hesabı bağlı değil.",
+  "error.messaging.lineUnsupported": "Bu bilgisayar LINE'a bağlanamıyor.",
+  "error.messaging.lineInvalidToken":
+    "LINE Channel access token'ı kabul etmedi. LINE Developers Console'dan yeniden kopyalayın.",
+  "error.messaging.lineUnreachable":
+    "OpenBot şu anda LINE'a ulaşamıyor. İnternet bağlantısını kontrol edin ve yeniden deneyin.",
+  "error.messaging.lineTooManySenders": "Bir LINE hesabı en fazla 200 kişiye izin verebilir.",
+  "error.messaging.lineRequestEnded": "Bu istek sona erdi. Kişiden tekrar yazmasını isteyin.",
+  "error.messaging.linePublicUrlInvalid": "https:// ile başlayan bir adres girin, örneğin https://example.com.",
   "error.messaging.memoryLimit": "Bağlı bir çalışma alanı en fazla {limit} belleğe sahip olabilir. Önce birini silin.",
 } as const satisfies PartialTranslation<typeof source>;

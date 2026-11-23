@@ -645,4 +645,121 @@ export const messages = {
     "OpenBot elimina la sua chiave di accesso su {host}. La cassaforte e le sue credenziali restano nel tuo account Proton.",
   "connector.protonPass.disconnect": "Disconnetti",
   "connector.protonPass.actionFailed": "OpenBot non è riuscito a modificare la connessione a Proton Pass.",
+  "connector.line.title": "LINE",
+  "connector.line.description":
+    "Collega un LINE Official Account a questo computer. Il LINE Orchestrator interpella l'agente giusto e risponde.",
+  "connector.line.statusConnected": "Collegato",
+  "connector.line.statusAttention": "Richiede attenzione",
+  "connector.line.summaryConnected": {
+    one: "{count} account · Il LINE Orchestrator risponde",
+    other: "{count} account · Il LINE Orchestrator risponde",
+  },
+  "connector.line.summaryNoAgent": {
+    one: "{count} account · Nessun agente risponde ancora",
+    other: "{count} account · Nessun agente risponde ancora",
+  },
+  "connector.line.attentionTitle": {
+    one: "{count} account richiede attenzione",
+    other: "{count} account richiedono attenzione",
+  },
+  "connector.line.attentionDescription": "Lo stato qui sotto indica cosa fare.",
+  "connector.line.connect": "Collega LINE",
+  "connector.line.addAgent": "Aggiungi agente",
+  "connector.line.actionFailed": "LINE non ha accettato la modifica",
+  "connector.line.connectTitle": "Collega un LINE Official Account",
+  "connector.line.connectDescription":
+    "OpenBot ha bisogno di due valori del canale Messaging API del tuo account nella LINE Developers Console.",
+  "connector.line.connectStepOpen": "Apri la LINE Developers Console e seleziona il tuo canale Messaging API",
+  "connector.line.connectStepToken": "Nella scheda Messaging API, emetti un Channel access token",
+  "connector.line.connectStepSecret": "Nella scheda Basic settings, copia il Channel secret",
+  "connector.line.connectWaiting": "Verifica dell'account con LINE…",
+  "connector.line.tokenLabel": "Channel access token",
+  "connector.line.secretLabel": "Channel secret",
+  "connector.line.credentialsNote": "OpenBot salva entrambi i valori cifrati su questo computer. Non li mostra più.",
+  "connector.line.credentialInvalid":
+    "Copia di nuovo entrambi i valori dalla LINE Developers Console. Non contengono spazi.",
+  "connector.line.accountsTitle": "Account",
+  "connector.line.accountNote": "Le persone che approvi possono scrivere a questo account in LINE.",
+  "connector.line.helpInvalidToken":
+    "LINE non ha accettato il Channel access token salvato. Disconnetti l'account e collegalo di nuovo.",
+  "connector.line.helpKeysUnreadable":
+    "OpenBot non riesce a leggere i valori salvati di questo account. Disconnetti l'account e collegalo di nuovo.",
+  "connector.line.helpError":
+    "OpenBot non riesce a raggiungere LINE per questo account. Riconnetti o disconnetti l'account.",
+  "connector.line.retryAt": "LINE ha chiesto a OpenBot di aspettare. Nuovo tentativo alle {time}.",
+  "connector.line.pause": "Pausa",
+  "connector.line.resume": "Riprendi",
+  "connector.line.reconnect": "Riconnetti",
+  "connector.line.disconnect": "Disconnetti",
+  "connector.line.disconnectAllTitle": "Disconnetti LINE",
+  "connector.line.disconnectAllSummary":
+    "Tutti gli account vengono disconnessi. Nessuno può più raggiungere i tuoi agenti tramite LINE.",
+  "connector.line.disconnectAllSummaryOrchestrator":
+    "Tutti gli account vengono disconnessi. Il LINE Orchestrator e le sue conversazioni vengono eliminati da OpenBot.",
+  "connector.line.rowAction": "{action}: {name}",
+  "connector.line.orchestratorTitle": "LINE Orchestrator",
+  "connector.line.orchestratorDescription":
+    "Questo agente riceve i messaggi per OpenBot dai tuoi account LINE. Risponde da solo a quelli brevi, passa il resto del lavoro all'agente giusto e risponde in LINE.",
+  "connector.line.orchestratorNone": "Nessun agente risponde ancora",
+  "connector.line.orchestratorNoneDescription": "Aggiungi il LINE Orchestrator, altrimenti LINE non riceve risposta.",
+  "connector.line.note":
+    "Le persone scrivono al tuo LINE Official Account. Prima hanno bisogno della tua approvazione.",
+  "connector.line.agentStepTitle": "Aggiungi il LINE Orchestrator",
+  "connector.line.agentStepDescription":
+    "Questo nuovo agente risponde ai messaggi per OpenBot su {account} e su ogni account che colleghi in seguito.",
+  "connector.line.orchestratorName": "LINE Orchestrator",
+  "connector.line.orchestratorRole": "Risponde in LINE e interpella il team",
+  "connector.line.orchestratorDoesReceive": "Riceve per primo ogni messaggio LINE per OpenBot",
+  "connector.line.orchestratorDoesDelegate": "Affida ogni compito all'agente più adatto",
+  "connector.line.orchestratorDoesAnswer": "Risponde nella chat LINE",
+  "connector.line.orchestratorModel": "Modello",
+  "connector.line.disconnectTitle": "Disconnettere {account}?",
+  "connector.line.disconnectDescription":
+    "OpenBot elimina i valori salvati di {account} e ferma il suo ascolto del webhook. L'indirizzo del webhook resta nella LINE Developers Console finché non lo cambi lì.",
+  "connector.line.disconnectEffect": "Nessuno può più raggiungere i tuoi agenti tramite {account}.",
+  "connector.line.removeEffectKept": "Le conversazioni e il LINE Orchestrator restano in OpenBot.",
+  "connector.line.removeEffectDeleted":
+    "È l'ultimo account, quindi il LINE Orchestrator e le sue conversazioni vengono eliminati da OpenBot.",
+  "connector.line.keep": "Resta collegato",
+  "connector.line.close": "Chiudi",
+  "connector.line.webhookTitle": "Webhook di {account}",
+  "connector.line.webhookDescription":
+    "LINE invia ogni messaggio a un indirizzo HTTPS pubblico. OpenBot ascolta solo su questo computer, quindi un tunnel deve inoltrare i messaggi.",
+  "connector.line.localAddress": "Indirizzo locale del webhook",
+  "connector.line.copyAddress": "Copia indirizzo",
+  "connector.line.webhookStepTunnel":
+    "Avvia un tunnel HTTPS pubblico, come Cloudflare Tunnel o ngrok, che inoltra all'indirizzo locale. OpenBot non crea il tunnel.",
+  "connector.line.webhookStepSave":
+    "Scrivi qui sotto l'indirizzo HTTPS pubblico del tunnel, poi seleziona Salva. OpenBot lo imposta come webhook in LINE e lo testa.",
+  "connector.line.webhookStepEnable": "Nella LINE Developers Console, attiva Use webhook.",
+  "connector.line.publicUrlLabel": "Indirizzo HTTPS pubblico",
+  "connector.line.publicUrlDescription": "Ad esempio https://example.com. OpenBot aggiunge /line/webhook.",
+  "connector.line.clearUrl": "Cancella",
+  "connector.line.webhookVerified": "Webhook verificato",
+  "connector.line.webhookVerifiedDetail": "LINE ha raggiunto OpenBot tramite l'indirizzo pubblico.",
+  "connector.line.webhookUnknown": "Webhook non testato",
+  "connector.line.webhookUnknownNoUrl": "Salva l'indirizzo pubblico per impostare e testare il webhook.",
+  "connector.line.webhookUnknownUrl":
+    "OpenBot non ha ancora visto LINE raggiungere il webhook. Salva di nuovo l'indirizzo per testarlo.",
+  "connector.line.webhookFailed": "Webhook non riuscito",
+  "connector.line.webhookFailedReason":
+    "LINE non è riuscito a raggiungere OpenBot. Controlla che il tunnel sia attivo e inoltri all'indirizzo locale. Motivo: {reason}",
+  "connector.line.webhookFailedNoReason":
+    "LINE non è riuscito a raggiungere OpenBot. Controlla che il tunnel sia attivo e inoltri all'indirizzo locale.",
+  "connector.line.onlineNote": "LINE funziona solo finché questo computer e il tunnel sono accesi.",
+  "connector.line.quotaTitle": "Limite mensile di messaggi raggiunto",
+  "connector.line.quotaDescription":
+    "Le risposte che richiedono più di circa un minuto vengono inviate come messaggi push, e LINE li conta. Quelle risposte falliscono finché il limite non si azzera.",
+  "connector.line.sendersTitle": "Persone approvate di {account}",
+  "connector.line.sendersDescription": "Queste persone possono affidare lavoro ai tuoi agenti.",
+  "connector.line.sendersEmpty": "Nessuno è ancora approvato.",
+  "connector.line.sendersLimit": "Un account può autorizzare al massimo {count} persone.",
+  "connector.line.unnamedPerson": "Utente LINE",
+  "connector.line.requestsTitle": "Richieste per {account}",
+  "connector.line.requestsDescription":
+    "Una persona che scrive a questo account per la prima volta deve essere approvata qui. La persona riceve un avviso.",
+  "connector.line.requestsEmpty": "Nessuna richiesta attende approvazione.",
+  "connector.line.requestExpires": "In attesa fino alle {time}",
+  "connector.line.approve": "Approva",
+  "connector.line.deny": "Rifiuta",
 } as const satisfies PartialTranslation<typeof source>;

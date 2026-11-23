@@ -646,4 +646,120 @@ export const messages = {
     "OpenBot {host} üzerindeki erişim anahtarını siler. Kasa ve içindeki oturum bilgileri Proton hesabınızda kalır.",
   "connector.protonPass.disconnect": "Bağlantıyı kes",
   "connector.protonPass.actionFailed": "OpenBot, Proton Pass bağlantısını değiştiremedi.",
+  "connector.line.title": "LINE",
+  "connector.line.description":
+    "Bu bilgisayara bir LINE Official Account bağlayın. LINE Düzenleyicisi doğru ajana sorar ve yanıt verir.",
+  "connector.line.statusConnected": "Bağlandı",
+  "connector.line.statusAttention": "Dikkat gerekiyor",
+  "connector.line.summaryConnected": {
+    one: "{count} hesap · LINE Düzenleyicisi yanıtlıyor",
+    other: "{count} hesap · LINE Düzenleyicisi yanıtlıyor",
+  },
+  "connector.line.summaryNoAgent": {
+    one: "{count} hesap · Henüz yanıt veren bir ajan yok",
+    other: "{count} hesap · Henüz yanıt veren bir ajan yok",
+  },
+  "connector.line.attentionTitle": {
+    one: "{count} hesap için işlem gerekiyor",
+    other: "{count} hesap için işlem gerekiyor",
+  },
+  "connector.line.attentionDescription": "Aşağıdaki durum ne yapılması gerektiğini belirtir.",
+  "connector.line.connect": "LINE'ı bağla",
+  "connector.line.addAgent": "Ajan ekle",
+  "connector.line.actionFailed": "LINE değişikliği kabul etmedi",
+  "connector.line.connectTitle": "Bir LINE Official Account bağlayın",
+  "connector.line.connectDescription":
+    "OpenBot'un, hesabınızın LINE Developers Console'daki Messaging API kanalından iki değere ihtiyacı var.",
+  "connector.line.connectStepOpen": "LINE Developers Console'u açın ve Messaging API kanalınızı seçin",
+  "connector.line.connectStepToken": "“Messaging API” sekmesinde bir Channel access token oluşturun",
+  "connector.line.connectStepSecret": "“Basic settings” sekmesinde Channel secret'ı kopyalayın",
+  "connector.line.connectWaiting": "Hesap LINE'da denetleniyor…",
+  "connector.line.tokenLabel": "Channel access token",
+  "connector.line.secretLabel": "Channel secret",
+  "connector.line.credentialsNote": "OpenBot iki değeri de şifreli olarak bu bilgisayara kaydeder. Bir daha göstermez.",
+  "connector.line.credentialInvalid":
+    "İki değeri de LINE Developers Console'dan yeniden kopyalayın. Boşluk içermezler.",
+  "connector.line.accountsTitle": "Hesaplar",
+  "connector.line.accountNote": "Onayladığınız kişiler LINE'da bu hesaba yazabilir.",
+  "connector.line.helpInvalidToken":
+    "LINE kayıtlı Channel access token'ı kabul etmedi. Hesabın bağlantısını kesin, sonra yeniden bağlayın.",
+  "connector.line.helpKeysUnreadable":
+    "OpenBot bu hesabın kayıtlı değerlerini okuyamıyor. Hesabın bağlantısını kesin, sonra yeniden bağlayın.",
+  "connector.line.helpError":
+    "OpenBot bu hesap için LINE'a ulaşamıyor. Yeniden bağlanın veya hesabın bağlantısını kesin.",
+  "connector.line.retryAt": "LINE OpenBot'tan beklemesini istedi. {time} saatinde tekrar deneyecek.",
+  "connector.line.pause": "Duraklat",
+  "connector.line.resume": "Sürdür",
+  "connector.line.reconnect": "Yeniden bağlan",
+  "connector.line.disconnect": "Bağlantıyı kes",
+  "connector.line.disconnectAllTitle": "LINE bağlantısını kes",
+  "connector.line.disconnectAllSummary":
+    "Tüm hesapların bağlantısı kesilir. Kimse ajanlarınıza artık LINE üzerinden ulaşamaz.",
+  "connector.line.disconnectAllSummaryOrchestrator":
+    "Tüm hesapların bağlantısı kesilir. LINE Düzenleyicisi ve konuşmaları OpenBot'tan silinir.",
+  "connector.line.rowAction": "{action}: {name}",
+  "connector.line.orchestratorTitle": "LINE Düzenleyicisi",
+  "connector.line.orchestratorDescription":
+    "Bu ajan, LINE hesaplarınızdan OpenBot'a gelen mesajları alır. Kısa olanları kendisi yanıtlar, diğer işleri doğru ajana iletir ve LINE'da yanıt verir.",
+  "connector.line.orchestratorNone": "Henüz yanıt veren bir ajan yok",
+  "connector.line.orchestratorNoneDescription": "LINE Düzenleyicisini ekleyin, aksi takdirde LINE yanıt alamaz.",
+  "connector.line.note": "Kişiler LINE Official Account'unuza yazar. Önce sizin onayınız gerekir.",
+  "connector.line.agentStepTitle": "LINE Düzenleyicisini ekleyin",
+  "connector.line.agentStepDescription":
+    "Bu yeni ajan, {account} üzerinde ve daha sonra bağladığınız her hesapta OpenBot'a gelen mesajları yanıtlar.",
+  "connector.line.orchestratorName": "LINE Düzenleyicisi",
+  "connector.line.orchestratorRole": "LINE'da yanıt verir ve ekibe sorar",
+  "connector.line.orchestratorDoesReceive": "OpenBot'a gelen her LINE mesajını ilk olarak alır",
+  "connector.line.orchestratorDoesDelegate": "Her görevi en uygun ajana iletir",
+  "connector.line.orchestratorDoesAnswer": "Yanıtı LINE sohbetinde paylaşır",
+  "connector.line.orchestratorModel": "Model",
+  "connector.line.disconnectTitle": "{account} bağlantısı kesilsin mi?",
+  "connector.line.disconnectDescription":
+    "OpenBot, {account} için kayıtlı değerleri siler ve webhook dinleyicisini durdurur. Webhook adresi, siz orada değiştirene kadar LINE Developers Console'da kalır.",
+  "connector.line.disconnectEffect": "Kişiler artık {account} üzerinden ajanlarınıza ulaşamaz.",
+  "connector.line.removeEffectKept": "Konuşmalar ve LINE Düzenleyicisi OpenBot'ta kalır.",
+  "connector.line.removeEffectDeleted":
+    "Bu son hesap olduğundan LINE Düzenleyicisi ve konuşmaları OpenBot'tan silinir.",
+  "connector.line.keep": "Bağlı tut",
+  "connector.line.close": "Kapat",
+  "connector.line.webhookTitle": "{account} webhook'u",
+  "connector.line.webhookDescription":
+    "LINE her mesajı herkese açık bir HTTPS adresine gönderir. OpenBot yalnızca bu bilgisayarda dinler, bu yüzden mesajları bir tünel iletmelidir.",
+  "connector.line.localAddress": "Yerel webhook adresi",
+  "connector.line.copyAddress": "Adresi kopyala",
+  "connector.line.webhookStepTunnel":
+    "Yerel adrese yönlendiren, Cloudflare Tunnel veya ngrok gibi herkese açık bir HTTPS tüneli başlatın. OpenBot tüneli oluşturmaz.",
+  "connector.line.webhookStepSave":
+    "Aşağıya tünelin herkese açık HTTPS adresini yazın, sonra Kaydet'i seçin. OpenBot bunu LINE'da webhook olarak ayarlar ve test eder.",
+  "connector.line.webhookStepEnable": "LINE Developers Console'da Use webhook'u açın.",
+  "connector.line.publicUrlLabel": "Herkese açık HTTPS adresi",
+  "connector.line.publicUrlDescription": "Örneğin https://example.com. OpenBot /line/webhook ekler.",
+  "connector.line.clearUrl": "Temizle",
+  "connector.line.webhookVerified": "Webhook doğrulandı",
+  "connector.line.webhookVerifiedDetail": "LINE, herkese açık adres üzerinden OpenBot'a ulaştı.",
+  "connector.line.webhookUnknown": "Webhook test edilmedi",
+  "connector.line.webhookUnknownNoUrl": "Webhook'u ayarlamak ve test etmek için herkese açık adresi kaydedin.",
+  "connector.line.webhookUnknownUrl":
+    "OpenBot, LINE'ın webhook'a ulaştığını henüz görmedi. Test etmek için adresi yeniden kaydedin.",
+  "connector.line.webhookFailed": "Webhook başarısız",
+  "connector.line.webhookFailedReason":
+    "LINE OpenBot'a ulaşamadı. Tünelin çalıştığını ve yerel adrese yönlendirdiğini kontrol edin. Neden: {reason}",
+  "connector.line.webhookFailedNoReason":
+    "LINE OpenBot'a ulaşamadı. Tünelin çalıştığını ve yerel adrese yönlendirdiğini kontrol edin.",
+  "connector.line.onlineNote": "LINE yalnızca bu bilgisayar ve tünel açıkken çalışır.",
+  "connector.line.quotaTitle": "Aylık mesaj sınırına ulaşıldı",
+  "connector.line.quotaDescription":
+    "Yaklaşık bir dakikadan uzun süren yanıtlar push mesajı olarak gönderilir ve LINE bunları sayar. Sınır sıfırlanana kadar bu yanıtlar başarısız olur.",
+  "connector.line.sendersTitle": "{account} için onaylı kişiler",
+  "connector.line.sendersDescription": "Bu kişiler ajanlarınıza iş verebilir.",
+  "connector.line.sendersEmpty": "Henüz kimse onaylanmadı.",
+  "connector.line.sendersLimit": "Bir hesap en fazla {count} kişiye izin verebilir.",
+  "connector.line.unnamedPerson": "LINE kullanıcısı",
+  "connector.line.requestsTitle": "{account} için istekler",
+  "connector.line.requestsDescription":
+    "Bu hesaba ilk kez yazan bir kişinin burada onaylanması gerekir. Kişi tek bir bildirim alır.",
+  "connector.line.requestsEmpty": "Onay bekleyen istek yok.",
+  "connector.line.requestExpires": "{time} saatine kadar bekler",
+  "connector.line.approve": "Onayla",
+  "connector.line.deny": "Reddet",
 } as const satisfies PartialTranslation<typeof source>;

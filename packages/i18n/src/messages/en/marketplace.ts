@@ -114,6 +114,7 @@ export const messages = defineMessages("marketplace", {
   "marketplace.app.discordTagline": "Mentions and direct messages in Discord",
   "marketplace.app.telegramTagline": "Groups and direct chats in Telegram",
   "marketplace.app.whatsappTagline": "Your own chat and the people you allow in WhatsApp",
+  "marketplace.app.lineTagline": "Direct chats with the people you approve in LINE",
   "marketplace.app.bitwardenTagline": "Sign in to sites with logins from a shared folder",
   "marketplace.app.protonPassTagline": "Sign in to sites with logins from a shared vault",
   "marketplace.app.onePasswordCategory": "Login and Credential Management",

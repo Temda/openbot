@@ -91,6 +91,7 @@ export const messages = {
   "marketplace.app.discordTagline": "Discord 멘션 및 다이렉트 메시지",
   "marketplace.app.telegramTagline": "Telegram 그룹 및 다이렉트 채팅",
   "marketplace.app.whatsappTagline": "WhatsApp의 내 채팅 및 허용한 사람",
+  "marketplace.app.lineTagline": "LINE에서 승인한 사람과의 다이렉트 채팅",
   "marketplace.app.bitwardenTagline": "공유 폴더의 로그인 정보로 사이트에 로그인",
   "marketplace.app.protonPassTagline": "공유 보관함의 로그인 정보로 사이트에 로그인",
   "marketplace.app.onePasswordCategory": "로그인 및 자격 증명 관리",

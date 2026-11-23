@@ -637,4 +637,118 @@ export const messages = {
     "OpenBot は {host} 上のアクセスキーを削除します。保管庫とそのログイン情報は Proton アカウントに残ります。",
   "connector.protonPass.disconnect": "切断",
   "connector.protonPass.actionFailed": "OpenBot は Proton Pass の接続を変更できませんでした。",
+  "connector.line.title": "LINE",
+  "connector.line.description":
+    "LINE Official Account をこのコンピューターにリンクします。LINE Orchestrator が適切なエージェントに依頼して回答します。",
+  "connector.line.statusConnected": "接続済み",
+  "connector.line.statusAttention": "対応が必要",
+  "connector.line.summaryConnected": {
+    other: "アカウント {count} 件 · LINE Orchestrator が回答します",
+  },
+  "connector.line.summaryNoAgent": {
+    other: "アカウント {count} 件 · 回答するエージェントはまだいません",
+  },
+  "connector.line.attentionTitle": {
+    other: "{count} 件のアカウントに対応が必要です",
+  },
+  "connector.line.attentionDescription": "下の状態に、必要な対応が表示されます。",
+  "connector.line.connect": "LINE を接続",
+  "connector.line.addAgent": "エージェントを追加",
+  "connector.line.actionFailed": "LINE が変更を受け付けませんでした",
+  "connector.line.connectTitle": "LINE Official Account を接続",
+  "connector.line.connectDescription":
+    "OpenBot には、LINE Developers Console にあるアカウントの Messaging API チャネルの値が 2 つ必要です。",
+  "connector.line.connectStepOpen": "LINE Developers Console を開き、Messaging API チャネルを選びます",
+  "connector.line.connectStepToken": "「Messaging API」タブで Channel access token を発行します",
+  "connector.line.connectStepSecret": "「Basic settings」タブで Channel secret をコピーします",
+  "connector.line.connectWaiting": "LINE でアカウントを確認しています…",
+  "connector.line.tokenLabel": "Channel access token",
+  "connector.line.secretLabel": "Channel secret",
+  "connector.line.credentialsNote": "OpenBot は 2 つの値を暗号化してこのコンピューターに保存し、再表示しません。",
+  "connector.line.credentialInvalid":
+    "LINE Developers Console から 2 つの値をもう一度コピーしてください。スペースは含まれません。",
+  "connector.line.accountsTitle": "アカウント",
+  "connector.line.accountNote": "承認した人は、LINE でこのアカウントに書き込めます。",
+  "connector.line.helpInvalidToken":
+    "LINE が保存済みの Channel access token を受け付けませんでした。アカウントを切断してから、もう一度接続してください。",
+  "connector.line.helpKeysUnreadable":
+    "OpenBot はこのアカウントの保存済みの値を読み取れません。アカウントを切断してから、もう一度接続してください。",
+  "connector.line.helpError":
+    "OpenBot はこのアカウントで LINE に接続できません。再接続するか、アカウントを切断してください。",
+  "connector.line.retryAt": "LINE から待機するよう求められました。{time} に再試行します。",
+  "connector.line.pause": "一時停止",
+  "connector.line.resume": "再開",
+  "connector.line.reconnect": "再接続",
+  "connector.line.disconnect": "切断",
+  "connector.line.disconnectAllTitle": "LINE を切断",
+  "connector.line.disconnectAllSummary":
+    "すべてのアカウントが切断されます。LINE からエージェントに連絡できなくなります。",
+  "connector.line.disconnectAllSummaryOrchestrator":
+    "すべてのアカウントが切断されます。LINE Orchestrator とその会話は OpenBot から削除されます。",
+  "connector.line.rowAction": "{action}: {name}",
+  "connector.line.orchestratorTitle": "LINE Orchestrator",
+  "connector.line.orchestratorDescription":
+    "このエージェントは、LINE アカウントから OpenBot 宛てのメッセージを受け取ります。短いものには自分で回答し、その他の作業は適切なエージェントに任せて、LINE で回答します。",
+  "connector.line.orchestratorNone": "回答するエージェントはまだいません",
+  "connector.line.orchestratorNoneDescription":
+    "LINE Orchestrator を追加してください。追加しないと、LINE に回答が届きません。",
+  "connector.line.note": "LINE Official Account には、人が書き込みます。先にあなたの承認が必要です。",
+  "connector.line.agentStepTitle": "LINE Orchestrator を追加",
+  "connector.line.agentStepDescription":
+    "この新しいエージェントが、{account} と、後で接続するすべてのアカウントで OpenBot 宛てのメッセージに回答します。",
+  "connector.line.orchestratorName": "LINE Orchestrator",
+  "connector.line.orchestratorRole": "LINE で回答し、チームに依頼します",
+  "connector.line.orchestratorDoesReceive": "OpenBot 宛ての LINE のメッセージをすべて最初に受け取ります",
+  "connector.line.orchestratorDoesDelegate": "各タスクを最も適したエージェントに任せます",
+  "connector.line.orchestratorDoesAnswer": "LINE のチャットで回答します",
+  "connector.line.orchestratorModel": "モデル",
+  "connector.line.disconnectTitle": "{account} を切断しますか？",
+  "connector.line.disconnectDescription":
+    "OpenBot は {account} の保存済みの値を削除し、webhook のリスナーを停止します。webhook のアドレスは、LINE Developers Console で変更するまで残ります。",
+  "connector.line.disconnectEffect": "{account} からあなたのエージェントに連絡できなくなります。",
+  "connector.line.removeEffectKept": "会話と LINE Orchestrator は OpenBot に残ります。",
+  "connector.line.removeEffectDeleted":
+    "最後のアカウントのため、LINE Orchestrator とその会話は OpenBot から削除されます。",
+  "connector.line.keep": "接続を維持",
+  "connector.line.close": "閉じる",
+  "connector.line.webhookTitle": "{account} の webhook",
+  "connector.line.webhookDescription":
+    "LINE は各メッセージを公開された HTTPS アドレスに送ります。OpenBot はこのコンピューターでのみ待ち受けるため、トンネルでメッセージを転送する必要があります。",
+  "connector.line.localAddress": "ローカルの webhook アドレス",
+  "connector.line.copyAddress": "アドレスをコピー",
+  "connector.line.webhookStepTunnel":
+    "ローカルアドレスに転送する公開 HTTPS トンネル (Cloudflare Tunnel や ngrok など) を起動します。OpenBot はトンネルを作成しません。",
+  "connector.line.webhookStepSave":
+    "トンネルの公開 HTTPS アドレスを下に入力し、「保存」を選びます。OpenBot が LINE の webhook に設定してテストします。",
+  "connector.line.webhookStepEnable": "LINE Developers Console で Use webhook をオンにします。",
+  "connector.line.publicUrlLabel": "公開 HTTPS アドレス",
+  "connector.line.publicUrlDescription": "例: https://example.com。OpenBot が /line/webhook を追加します。",
+  "connector.line.clearUrl": "クリア",
+  "connector.line.webhookVerified": "webhook を確認しました",
+  "connector.line.webhookVerifiedDetail": "LINE が公開アドレス経由で OpenBot に届きました。",
+  "connector.line.webhookUnknown": "webhook は未テストです",
+  "connector.line.webhookUnknownNoUrl": "公開アドレスを保存すると、webhook を設定してテストします。",
+  "connector.line.webhookUnknownUrl":
+    "OpenBot は LINE が webhook に届いたことをまだ確認していません。アドレスをもう一度保存してテストしてください。",
+  "connector.line.webhookFailed": "webhook に失敗しました",
+  "connector.line.webhookFailedReason":
+    "LINE が OpenBot に届きませんでした。トンネルが動作し、ローカルアドレスに転送していることを確認してください。理由: {reason}",
+  "connector.line.webhookFailedNoReason":
+    "LINE が OpenBot に届きませんでした。トンネルが動作し、ローカルアドレスに転送していることを確認してください。",
+  "connector.line.onlineNote": "LINE は、このコンピューターとトンネルがオンのときだけ動作します。",
+  "connector.line.quotaTitle": "月間メッセージ上限に達しました",
+  "connector.line.quotaDescription":
+    "約 1 分より長くかかる回答はプッシュメッセージとして送信され、LINE がカウントします。上限がリセットされるまで、それらの回答は失敗します。",
+  "connector.line.sendersTitle": "{account} の承認済みの人",
+  "connector.line.sendersDescription": "この人たちは、エージェントに作業を依頼できます。",
+  "connector.line.sendersEmpty": "承認済みの人はまだいません。",
+  "connector.line.sendersLimit": "1 つのアカウントで許可できるのは最大 {count} 人です。",
+  "connector.line.unnamedPerson": "LINE ユーザー",
+  "connector.line.requestsTitle": "{account} へのリクエスト",
+  "connector.line.requestsDescription":
+    "このアカウントに初めて書き込んだ人は、ここで承認する必要があります。その人には通知が 1 回届きます。",
+  "connector.line.requestsEmpty": "承認待ちのリクエストはありません。",
+  "connector.line.requestExpires": "{time} まで待機中",
+  "connector.line.approve": "承認",
+  "connector.line.deny": "拒否",
 } as const satisfies PartialTranslation<typeof source>;

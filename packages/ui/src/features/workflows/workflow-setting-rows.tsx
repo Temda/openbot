@@ -1,9 +1,9 @@
 import type { MessagingPlatform } from "@openbot/contracts/ipc";
-import { Bot, ChevronDown, DropdownMenu, Hash, Input, MessageCircle } from "@openbot/ui";
+import { Bot, ChevronDown, DropdownMenu, Hash, Input } from "@openbot/ui";
 import type { JSX } from "@solidjs/web";
 import { For, Show, untrack } from "solid-js";
 import { useText } from "../../text";
-import { DiscordMark, SlackMark, TelegramMark, WhatsAppMark } from "../settings/brand-marks";
+import { DiscordMark, LineMark, SlackMark, TelegramMark, WhatsAppMark } from "../settings/brand-marks";
 import { createPickerFades, type PickerGroup, PickerHeading, PickerMenu, PickerRow } from "./WorkflowPicker";
 import { useBoard, type WfnFieldValue } from "./workflow-board";
 import { asString, type Choice, placeKey, useField, usePlace } from "./workflow-node-parts";
@@ -271,7 +271,7 @@ const PLATFORM_MARKS: Record<MessagingPlatform, (props: { class?: string }) => J
   discord: DiscordMark,
   telegram: TelegramMark,
   whatsapp: WhatsAppMark,
-  line: (props) => <MessageCircle class={props.class} aria-hidden="true" />,
+  line: LineMark,
 };
 
 const channelKey = (channelId: string) => JSON.stringify([channelId]);

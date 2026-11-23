@@ -588,6 +588,7 @@ const CONNECTOR_LINKS: Readonly<Record<ConnectorId, readonly ConnectorLink[]>> =
   discord: [{ label: "plugin.link.website", url: "https://discord.com" }],
   telegram: [{ label: "plugin.link.website", url: "https://telegram.org" }],
   whatsapp: [{ label: "plugin.link.website", url: "https://www.whatsapp.com" }],
+  line: [{ label: "plugin.link.website", url: "https://line.me" }],
   github: [{ label: "plugin.link.website", url: "https://github.com" }],
   onepassword: [
     { label: "plugin.link.website", url: "https://1password.com" },
@@ -603,6 +604,7 @@ const CONNECTOR_DEVELOPER = {
   discord: "connector.discord.title",
   telegram: "connector.telegram.title",
   whatsapp: "connector.whatsapp.title",
+  line: "connector.line.title",
   github: "connector.github.title",
   onepassword: "connector.onePassword.title",
   bitwarden: "connector.bitwarden.title",

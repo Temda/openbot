@@ -60,4 +60,9 @@ export const messages = {
     "OpenBot przestał tu odpowiadać na 10 minut: w krótkim czasie przyszło za dużo wiadomości. Jeśli z tym numerem jest połączony inny OpenBot, otwórz Połączone urządzenia w WhatsAppie na telefonie i wyloguj OpenBot, którego nie używasz.",
   "status.messaging.whatsappOrchestratorName": "WhatsApp Orchestrator",
   "status.messaging.whatsappOrchestratorTitle": "Odpowiada w WhatsApp i pyta zespół",
+  "status.messaging.lineNoAgent": "Żaden agent nie może tu jeszcze odpowiadać. Dodaj LINE Orchestrator w OpenBot.",
+  "status.messaging.linePairingNotice":
+    "To konto odpowiada tylko osobom, którym zezwolił jego właściciel. Właściciel dostał twoją prośbę. Napisz ponownie, gdy właściciel ją zatwierdzi.",
+  "status.messaging.lineOrchestratorName": "LINE Orchestrator",
+  "status.messaging.lineOrchestratorTitle": "Odpowiada w LINE i pyta zespół",
 } as const satisfies PartialTranslation<typeof source>;

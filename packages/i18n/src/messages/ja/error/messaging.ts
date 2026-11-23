@@ -27,6 +27,15 @@ export const messages = {
     "この番号には WhatsApp アカウントがありません。+44 7700 900123 のように国番号を付けて入力してください。",
   "error.messaging.whatsappRequestEnded":
     "このリクエストは終了しました。新しいコードを受け取るには、相手にもう一度書き込むよう依頼してください。",
+  "error.messaging.lineNotConnected": "この LINE アカウントは接続されていません。",
+  "error.messaging.lineUnsupported": "このコンピューターは LINE に接続できません。",
+  "error.messaging.lineInvalidToken":
+    "LINE が Channel access token を受け付けませんでした。LINE Developers Console からもう一度コピーしてください。",
+  "error.messaging.lineUnreachable":
+    "OpenBot は現在 LINE に接続できません。インターネット接続を確認して、もう一度お試しください。",
+  "error.messaging.lineTooManySenders": "1 つの LINE アカウントで許可できるのは最大 200 人です。",
+  "error.messaging.lineRequestEnded": "このリクエストは終了しました。相手にもう一度書き込むよう依頼してください。",
+  "error.messaging.linePublicUrlInvalid": "https:// で始まるアドレスを入力してください。例: https://example.com。",
   "error.messaging.memoryLimit":
     "接続したワークスペースに置けるメモリーは {limit} 個までです。先に 1 つ削除してください。",
 } as const satisfies PartialTranslation<typeof source>;

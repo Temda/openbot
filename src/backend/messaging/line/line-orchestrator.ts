@@ -1,7 +1,7 @@
 import { INPUT_LIMITS } from "@openbot/contracts/input-limits";
 import { sourceText } from "@openbot/i18n/source";
 
-export const LINE_ORCHESTRATOR_AVATAR = { avatarSeed: "line-orchestrator", avatarHue: 100 } as const;
+export { LINE_ORCHESTRATOR_AVATAR } from "@openbot/contracts/line-app";
 
 const LINE_ORCHESTRATOR_DESCRIPTION = `You are the LINE Orchestrator of this OpenBot team. Every LINE message that reaches the OpenBot user's agents comes to you first: a direct text message from a person that the owner allowed to write to the LINE Official Account. LINE shows your replies as the Official Account.
 

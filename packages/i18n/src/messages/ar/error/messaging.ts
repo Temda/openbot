@@ -23,5 +23,13 @@ export const messages = {
   "error.messaging.whatsappTooManySenders": "يمكن لرقم WhatsApp أن يسمح بما يصل إلى 200 من جهات الاتصال والمجموعات.",
   "error.messaging.whatsappNumberNotFound": "لا يوجد حساب واتساب لهذا الرقم. اكتبه مع رمز الدولة، مثل +44 7700 900123.",
   "error.messaging.whatsappRequestEnded": "انتهى هذا الطلب. اطلب من الشخص أن يكتب مرة أخرى للحصول على رمز جديد.",
+  "error.messaging.lineNotConnected": "حساب LINE هذا غير متصل.",
+  "error.messaging.lineUnsupported": "لا يمكن لهذا الحاسوب الاتصال بـ LINE.",
+  "error.messaging.lineInvalidToken":
+    "لم يقبل LINE قيمة Channel access token. انسخها مرة أخرى من LINE Developers Console.",
+  "error.messaging.lineUnreachable": "لا يستطيع OpenBot الوصول إلى LINE الآن. تحقق من اتصال الإنترنت وحاول مرة أخرى.",
+  "error.messaging.lineTooManySenders": "يمكن لحساب LINE أن يسمح بما يصل إلى 200 شخص.",
+  "error.messaging.lineRequestEnded": "انتهى هذا الطلب. اطلب من الشخص أن يكتب مرة أخرى.",
+  "error.messaging.linePublicUrlInvalid": "أدخل عنوانًا يبدأ بـ https://، مثل https://example.com.",
   "error.messaging.memoryLimit": "يمكن أن تحتوي مساحة العمل المتصلة على {limit} ذكريات كحد أقصى. احذف واحدة أولًا.",
 } as const satisfies PartialTranslation<typeof source>;

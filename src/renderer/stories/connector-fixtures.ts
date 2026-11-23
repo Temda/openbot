@@ -65,6 +65,24 @@ export const STORY_CONNECTOR_DETAILS: readonly ConnectorDetail[] = [
     },
   },
   {
+    id: "line",
+    props: {
+      agents: [],
+      connections: [],
+      accounts: [],
+      busy: false,
+      onConnect: fn(),
+      onDisconnectAccount: fn(),
+      onDisconnectAll: fn(),
+      onReconnect: fn(),
+      onSetEnabled: fn(),
+      onSetPublicUrl: fn(),
+      onAddOrchestrator: fn(),
+      onAnswerRequest: fn(),
+      onRemoveSender: fn(),
+    },
+  },
+  {
     id: "github",
     props: {
       status: {
@@ -194,6 +212,28 @@ export const CONNECTED_CONNECTOR_DETAILS: readonly ConnectorDetail[] = STORY_CON
               ownNumber: true,
               workingMessage: true,
               statusReactions: true,
+              allowedSenders: [],
+              pendingRequests: [],
+            },
+          ],
+        },
+      };
+    case "line":
+      return {
+        ...detail,
+        props: {
+          ...detail.props,
+          agents: [ORCHESTRATOR],
+          connections: [channel({ platform: "line", workspaceId: "U0STORYLINE", workspaceName: "Acme Support" })],
+          accounts: [
+            {
+              workspaceId: "U0STORYLINE",
+              webhook: "verified",
+              webhookReason: null,
+              webhookPort: 3101,
+              localWebhookUrl: "http://127.0.0.1:3101/line/webhook",
+              publicUrl: "https://line.example.com",
+              quotaExceeded: false,
               allowedSenders: [],
               pendingRequests: [],
             },

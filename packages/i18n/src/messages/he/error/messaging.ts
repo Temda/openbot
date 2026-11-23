@@ -25,5 +25,13 @@ export const messages = {
   "error.messaging.whatsappNumberNotFound":
     "למספר הזה אין חשבון WhatsApp. יש להקליד אותו עם קידומת המדינה, למשל +44 7700 900123.",
   "error.messaging.whatsappRequestEnded": "הבקשה הזו הסתיימה. יש לבקש מהאדם לכתוב שוב כדי לקבל קוד חדש.",
+  "error.messaging.lineNotConnected": "חשבון ה-LINE הזה אינו מחובר.",
+  "error.messaging.lineUnsupported": "המחשב הזה אינו יכול להתחבר ל-LINE.",
+  "error.messaging.lineInvalidToken":
+    "LINE לא קיבל את Channel access token. יש להעתיק אותו שוב מ-LINE Developers Console.",
+  "error.messaging.lineUnreachable": "OpenBot לא מצליח להגיע ל-LINE כרגע. יש לבדוק את החיבור לאינטרנט ולנסות שוב.",
+  "error.messaging.lineTooManySenders": "חשבון LINE יכול לאשר עד 200 אנשים.",
+  "error.messaging.lineRequestEnded": "הבקשה הזו הסתיימה. יש לבקש מהאדם לכתוב שוב.",
+  "error.messaging.linePublicUrlInvalid": "יש להזין כתובת שמתחילה ב-https://, למשל https://example.com.",
   "error.messaging.memoryLimit": "לסביבת עבודה מחוברת יכולים להיות עד {limit} זיכרונות. יש למחוק אחד קודם.",
 } as const satisfies PartialTranslation<typeof source>;

@@ -27,5 +27,14 @@ export const messages = {
     "Este número não tem conta no WhatsApp. Digite-o com o código do país, como +44 7700 900123.",
   "error.messaging.whatsappRequestEnded":
     "Esta solicitação terminou. Peça para a pessoa escrever de novo para receber um novo código.",
+  "error.messaging.lineNotConnected": "Esta conta do LINE não está conectada.",
+  "error.messaging.lineUnsupported": "Este computador não consegue se conectar ao LINE.",
+  "error.messaging.lineInvalidToken":
+    "O LINE não aceitou o Channel access token. Copie-o de novo do LINE Developers Console.",
+  "error.messaging.lineUnreachable":
+    "O OpenBot não consegue acessar o LINE agora. Verifique a conexão com a internet e tente de novo.",
+  "error.messaging.lineTooManySenders": "Uma conta do LINE pode permitir até 200 pessoas.",
+  "error.messaging.lineRequestEnded": "Esta solicitação terminou. Peça para a pessoa escrever de novo.",
+  "error.messaging.linePublicUrlInvalid": "Digite um endereço que comece com https://, como https://example.com.",
   "error.messaging.memoryLimit": "Um espaço de trabalho conectado pode ter até {limit} memórias. Exclua uma primeiro.",
 } as const satisfies PartialTranslation<typeof source>;

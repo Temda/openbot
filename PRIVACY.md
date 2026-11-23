@@ -1472,7 +1472,8 @@ Network traffic can also occur when:
 - a Slack workspace is connected. See [Slack connections](#slack-connections);
 - a Discord server is connected. See [Discord connections](#discord-connections);
 - a Telegram chat is connected. See [Telegram connections](#telegram-connections);
-- a WhatsApp number is linked. See [WhatsApp connections](#whatsapp-connections).
+- a WhatsApp number is linked. See [WhatsApp connections](#whatsapp-connections);
+- a LINE Official Account is connected. See [LINE connections](#line-connections).
 
 ## Webhook routines
 
@@ -1822,6 +1823,31 @@ restrict or block a number that it sees as automated.
 Anyone whom the owner allowed can give the agents work. The agents run on the host with the access
 the user gave them. A hosted server that sleeps does not start for a WhatsApp message; WhatsApp keeps
 the message until the server connects again.
+
+## LINE connections
+
+A LINE Official Account connects to the computer that runs the agents. The computer calls
+`api.line.me` directly. No OpenBot service takes part: the account service and Signal do not know
+the account, the token or any message. LINE sends each message to a local webhook listener of the
+computer, through a public HTTPS tunnel that the user runs. The listener accepts only requests with a
+valid signature of the channel secret.
+
+- **Seen by the tunnel.** The company that runs the tunnel ends the HTTPS connection, so it can read
+  each webhook request: the LINE user ID and the text of each message that a person sends to the
+  account. OpenBot does not choose or start the tunnel. Answers do not go through the tunnel.
+- **Stored on the host.** The channel access token, the channel secret, the webhook port and the
+  public address that the user typed are in the encrypted secret store of the computer, and no screen
+  shows the token or the secret again. The database holds the account name, which agent is the LINE
+  Orchestrator, the people that the owner approved (LINE user ID and name), and one row per
+  conversation that an agent answers. Requests that wait for approval are kept in memory. Disconnect
+  deletes the saved values and keeps the conversations and the approved people.
+- **Read from LINE.** LINE sends every event of the account to the listener. OpenBot gives an agent
+  only the direct text messages of approved people. From a person who is not approved, it keeps the
+  LINE user ID and the name of the request, in memory, and drops the text. It drops all other events.
+  OpenBot asks LINE for the name of a person when that person asks for approval.
+- **Sent to LINE.** The text that an agent answers, redacted, and one notice to a person who is not
+  approved yet. OpenBot also calls `api.line.me` to check the token, to set and test the webhook
+  address, and to read the name of a person who writes.
 
 ## Agent access
 

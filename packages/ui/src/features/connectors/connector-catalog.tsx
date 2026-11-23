@@ -5,6 +5,7 @@ import {
   BitwardenTile,
   DiscordTile,
   GitHubTile,
+  LineTile,
   OnePasswordTile,
   ProtonPassTile,
   SlackTile,
@@ -44,6 +45,12 @@ export const CONNECTOR_LISTINGS: Readonly<Record<ConnectorId, ConnectorListing>>
     tagline: "marketplace.app.whatsappTagline",
     category: "productivity",
     Mark: () => <WhatsAppTile />,
+  },
+  line: {
+    title: "connector.line.title",
+    tagline: "marketplace.app.lineTagline",
+    category: "productivity",
+    Mark: () => <LineTile />,
   },
   github: {
     title: "connector.github.title",

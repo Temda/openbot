@@ -61,4 +61,9 @@ export const messages = {
     "OpenBot antwortet hier 10 Minuten lang nicht: In kurzer Zeit kamen zu viele Nachrichten. Wenn ein anderer OpenBot mit dieser Nummer verknüpft ist, öffne in WhatsApp auf deinem Handy „Verknüpfte Geräte“ und melde den OpenBot ab, den du nicht nutzt.",
   "status.messaging.whatsappOrchestratorName": "WhatsApp-Orchestrator",
   "status.messaging.whatsappOrchestratorTitle": "Antwortet in WhatsApp und fragt das Team",
+  "status.messaging.lineNoAgent": "Hier kann noch kein Agent antworten. Füge den LINE-Orchestrator in OpenBot hinzu.",
+  "status.messaging.linePairingNotice":
+    "Dieses Konto antwortet nur Personen, die sein Besitzer zugelassen hat. Der Besitzer hat deine Anfrage bekommen. Schreibe erneut, nachdem der Besitzer sie genehmigt hat.",
+  "status.messaging.lineOrchestratorName": "LINE-Orchestrator",
+  "status.messaging.lineOrchestratorTitle": "Antwortet in LINE und fragt das Team",
 } as const satisfies PartialTranslation<typeof source>;

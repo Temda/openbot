@@ -27,6 +27,15 @@ export const messages = {
     "이 번호에는 WhatsApp 계정이 없습니다. +44 7700 900123처럼 국가 코드를 포함해 입력하세요.",
   "error.messaging.whatsappRequestEnded":
     "이 요청은 끝났어요. 새 코드를 받으려면 상대에게 다시 메시지를 보내 달라고 하세요.",
+  "error.messaging.lineNotConnected": "이 LINE 계정이 연결되어 있지 않아요.",
+  "error.messaging.lineUnsupported": "이 컴퓨터는 LINE에 연결할 수 없어요.",
+  "error.messaging.lineInvalidToken":
+    "LINE이 Channel access token을 받아들이지 않았어요. LINE Developers Console에서 다시 복사하세요.",
+  "error.messaging.lineUnreachable":
+    "지금은 OpenBot이 LINE에 접근할 수 없어요. 인터넷 연결을 확인한 다음 다시 시도해 주세요.",
+  "error.messaging.lineTooManySenders": "LINE 계정 하나에 최대 200명까지 허용할 수 있어요.",
+  "error.messaging.lineRequestEnded": "이 요청은 끝났어요. 상대에게 다시 메시지를 보내 달라고 하세요.",
+  "error.messaging.linePublicUrlInvalid": "https://로 시작하는 주소를 입력하세요. 예: https://example.com.",
   "error.messaging.memoryLimit":
     "연결된 워크스페이스는 메모리를 최대 {limit}개까지 가질 수 있어요. 먼저 하나를 삭제해 주세요.",
 } as const satisfies PartialTranslation<typeof source>;

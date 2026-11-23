@@ -1,7 +1,7 @@
 # Messaging connections
 
-The agents of this computer can answer in an external chat platform. Slack, Discord, Telegram and
-WhatsApp are supported today. The design notes are in
+The agents of this computer can answer in an external chat platform. Slack, Discord, Telegram,
+WhatsApp and LINE are supported today. The design notes are in
 [architecture/channels-and-messaging.md](architecture/channels-and-messaging.md#messaging-connections),
 the Slack launch steps in [apps/slack-app/LAUNCH.md](../apps/slack-app/LAUNCH.md), and the Discord app
 settings in [apps/discord-app/README.md](../apps/discord-app/README.md).
@@ -206,6 +206,44 @@ the WhatsApp Orchestrator is deleted with its conversations, as for Slack.
 - Files up to 64 MB go both ways. A voice message arrives as an audio file.
 - A message that arrives while OpenBot is off waits on WhatsApp's servers and arrives when the number
   connects again. OpenBot answers messages up to one day old.
+
+## Connect LINE
+
+One LINE Official Account connects to the computer that runs OpenBot. LINE sends each message to a
+webhook, so OpenBot listens on a local port, and you point a public HTTPS tunnel at it. OpenBot does
+not make the tunnel. LINE works only while this computer and the tunnel are on. LINE has no joined
+server path: the page shows only on the computer that runs OpenBot.
+
+1. In the LINE Developers Console, open the Messaging API channel of your Official Account. On the
+   **Messaging API** tab, issue a **Channel access token**. On the **Basic settings** tab, copy the
+   **Channel secret**.
+2. Open **Marketplace → Apps → LINE**, paste both values, and select **Connect LINE**. OpenBot checks
+   the token with LINE. It saves both values encrypted and shows them no more.
+3. Start a public HTTPS tunnel, such as Cloudflare Tunnel or ngrok, that forwards to the **Local
+   webhook address** on the page. Type the public address of the tunnel and select **Save**. OpenBot
+   sets `<address>/line/webhook` as the webhook in LINE and tests it. The page shows **Webhook
+   verified**, or the reason that LINE gave.
+4. In the LINE Developers Console, turn on **Use webhook**.
+5. A person who writes to the account for the first time gets one notice, and the request shows under
+   **Requests**. Select **Approve** to allow the person, or **Refuse**. Approved people show under
+   **Approved people**, with **Remove**.
+6. Pick the model of the LINE Orchestrator and select **Add agent**. It goes in the **Integrations**
+   section of the sidebar.
+
+**Disconnect** deletes the saved values and stops the listener. It keeps the conversations and the
+approved people. The webhook address stays in the LINE Developers Console until you change it there.
+When it is the last account, the LINE Orchestrator is deleted with its conversations.
+
+## What happens in LINE
+
+- Only direct chats and text messages reach an agent. Other messages and group chats are ignored.
+- A message from a person that you did not approve starts nothing.
+- LINE cannot edit a message. An answer is one message that OpenBot does not change.
+- An answer within about one minute uses the reply token of the message. A later answer uses a push
+  message. LINE counts push messages toward the monthly limit of the account. When the limit is
+  reached, the page shows a notice, and late answers fail until the limit resets.
+- LINE reaches OpenBot only while the computer and the tunnel are on. OpenBot does not read a message
+  that LINE sent while they were off.
 
 ## Test Telegram locally
 

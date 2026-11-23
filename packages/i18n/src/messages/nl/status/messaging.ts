@@ -60,4 +60,9 @@ export const messages = {
     "OpenBot antwoordt hier 10 minuten niet: er kwamen te veel berichten in korte tijd. Als er nog een OpenBot aan dit nummer is gekoppeld, open dan Gekoppelde apparaten in WhatsApp op je telefoon en log uit bij de OpenBot die je niet gebruikt.",
   "status.messaging.whatsappOrchestratorName": "WhatsApp-orchestrator",
   "status.messaging.whatsappOrchestratorTitle": "Antwoordt in WhatsApp en vraagt het team",
+  "status.messaging.lineNoAgent": "Er kan hier nog geen agent antwoorden. Voeg de LINE Orchestrator toe in OpenBot.",
+  "status.messaging.linePairingNotice":
+    "Dit account antwoordt alleen mensen die de eigenaar heeft toegestaan. De eigenaar heeft je verzoek gekregen. Schrijf opnieuw nadat de eigenaar het heeft goedgekeurd.",
+  "status.messaging.lineOrchestratorName": "LINE-orchestrator",
+  "status.messaging.lineOrchestratorTitle": "Antwoordt in LINE en vraagt het team",
 } as const satisfies PartialTranslation<typeof source>;

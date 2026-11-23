@@ -8,6 +8,7 @@ import { connectorAccess } from "./connector-access";
 import type { ConnectorController } from "./connector-controller";
 import { createGitHubConnector } from "./github-connector";
 import type { GitHubConnectorPort } from "./github-connector-port";
+import { createLineConnector, type LinePort } from "./line-connector";
 import { createMessagingConnector, type MessagingApi, type MessagingConnectorOptions } from "./messaging-connector";
 import { createOnePasswordConnector } from "./onepassword-connector";
 import { type OnePasswordConnectorPort, onePasswordConnectorPort } from "./onepassword-connector-port";
@@ -24,6 +25,7 @@ export interface ConnectorTransports {
   passwordManagers?: () => PasswordManagerPort;
   messaging?: MessagingApi;
   whatsapp?: () => WhatsAppPort;
+  line?: () => LinePort;
 }
 
 export const LOCAL_CONNECTOR_TRANSPORTS = {
@@ -41,6 +43,7 @@ export function createConnectorSet(transports: ConnectorTransports, options: Mes
     set.telegram = createMessagingConnector("telegram", messaging, options);
   }
   if (transports.whatsapp) set.whatsapp = createWhatsAppConnector(transports.whatsapp, options);
+  if (transports.line) set.line = createLineConnector(transports.line, options);
   if (transports.github) set.github = createGitHubConnector(transports.github, options.hostName);
   if (transports.onePassword) set.onepassword = createOnePasswordConnector(transports.onePassword, options.hostName);
   if (transports.bitwarden) set.bitwarden = createBitwardenConnector(transports.bitwarden, options.hostName);

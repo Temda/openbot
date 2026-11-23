@@ -62,4 +62,10 @@ export const messages = {
     "短時間にメッセージが多すぎたため、OpenBot はここで 10 分間応答を止めています。この番号に別の OpenBot もリンクされている場合は、スマートフォンの WhatsApp で「リンク済みデバイス」を開き、使っていない OpenBot をログアウトしてください。",
   "status.messaging.whatsappOrchestratorName": "WhatsApp Orchestrator",
   "status.messaging.whatsappOrchestratorTitle": "WhatsApp で回答し、チームに依頼します",
+  "status.messaging.lineNoAgent":
+    "ここで回答できるエージェントはまだいません。OpenBot で LINE Orchestrator を追加してください。",
+  "status.messaging.linePairingNotice":
+    "このアカウントは、所有者が許可した人にだけ回答します。所有者にリクエストが届きました。所有者が承認した後で、もう一度書き込んでください。",
+  "status.messaging.lineOrchestratorName": "LINE Orchestrator",
+  "status.messaging.lineOrchestratorTitle": "LINE で回答し、チームに依頼します",
 } as const satisfies PartialTranslation<typeof source>;

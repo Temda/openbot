@@ -58,4 +58,9 @@ export const messages = {
     "OpenBot הפסיק לענות כאן למשך 10 דקות: הגיעו יותר מדי הודעות בזמן קצר. אם OpenBot נוסף מקושר למספר הזה, יש לפתוח את 'מכשירים מקושרים' בוואטסאפ בטלפון ולהתנתק מה-OpenBot שאינו בשימוש.",
   "status.messaging.whatsappOrchestratorName": "WhatsApp Orchestrator",
   "status.messaging.whatsappOrchestratorTitle": "עונה ב-WhatsApp ושואל את הצוות",
+  "status.messaging.lineNoAgent": "אין עדיין סוכן שיכול לענות כאן. יש להוסיף את מתזמר LINE ב-OpenBot.",
+  "status.messaging.linePairingNotice":
+    "החשבון הזה עונה רק לאנשים שהבעלים שלו אישר. הבעלים קיבל את הבקשה שלך. יש לכתוב שוב אחרי שהבעלים יאשר אותה.",
+  "status.messaging.lineOrchestratorName": "LINE Orchestrator",
+  "status.messaging.lineOrchestratorTitle": "עונה ב-LINE ושואל את הצוות",
 } as const satisfies PartialTranslation<typeof source>;

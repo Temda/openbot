@@ -291,6 +291,7 @@
     "./features/settings/ProtonPassConnectorPanel": "./src/features/settings/ProtonPassConnectorPanel.tsx",
     "./features/settings/SlackIntegrationPanel": "./src/features/settings/SlackIntegrationPanel.tsx",
     "./features/settings/TelegramIntegrationPanel": "./src/features/settings/TelegramIntegrationPanel.tsx",
+    "./features/settings/LineIntegrationPanel": "./src/features/settings/LineIntegrationPanel.tsx",
     "./features/settings/WhatsAppIntegrationPanel": "./src/features/settings/WhatsAppIntegrationPanel.tsx",
     "./features/settings/AppearanceSelect": "./src/features/settings/AppearanceSelect.tsx",
     "./features/settings/FontSelect": "./src/features/settings/FontSelect.tsx",
