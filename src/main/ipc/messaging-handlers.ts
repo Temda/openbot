@@ -48,16 +48,22 @@ import { handler, type IpcGroupHandlers, payloadHandler } from "./define-ipc-gro
 import {
   parseAddMessagingOrchestratorInput,
   parseAddTelegramOrchestratorInput,
+  parseAnswerLineRequestInput,
   parseAnswerWhatsAppRequestInput,
+  parseConnectLineInput,
   parseConnectTelegramChatInput,
   parseHostAddMessagingOrchestratorInput,
   parseHostMessagingConnectInput,
   parseHostMessagingPlatformInput,
   parseHostMessagingWorkspaceInput,
   parseHostSetMessagingEnabledInput,
+  parseLineWorkspaceInput,
   parseMessagingWorkspaceInput,
+  parseRemoveLineSenderInput,
   parseRemoveWhatsAppSenderInput,
   parseSetDiscordAccessInput,
+  parseSetLineEnabledInput,
+  parseSetLinePublicUrlInput,
   parseSetMessagingEnabledInput,
   parseSetWhatsAppOwnNumberInput,
   parseSetWhatsAppStatusReactionsInput,
@@ -99,6 +105,13 @@ interface MessagingIpcDependencies {
     | "setWhatsAppOwnNumber"
     | "setWhatsAppWorkingMessage"
     | "setWhatsAppStatusReactions"
+    | "lineOverview"
+    | "connectLine"
+    | "disconnectLine"
+    | "answerLineRequest"
+    | "removeLineSender"
+    | "setLinePublicUrl"
+    | "addLineOrchestrator"
   >;
   remoteServers: {
     supportsCapability(serverId: string, capability: TeamCurrentCapability): boolean;
@@ -284,6 +297,29 @@ export function messagingIpcHandlers({
         parseSetWhatsAppStatusReactionsInput,
         ({ workspaceId, statusReactions }) =>
           runCauseEffect(messaging.setWhatsAppStatusReactions(workspaceId, statusReactions)),
+      ),
+      getLineOverview: handler(() => messaging.lineOverview()),
+      connectLine: payloadHandler(parseConnectLineInput, (input) => runCauseEffect(messaging.connectLine(input))),
+      disconnectLine: payloadHandler(parseLineWorkspaceInput, ({ workspaceId }) =>
+        runCauseEffect(messaging.disconnectLine(workspaceId)),
+      ),
+      reconnectLine: payloadHandler(parseLineWorkspaceInput, ({ workspaceId }) =>
+        runCauseEffect(Effect.asVoid(messaging.reconnect("line", workspaceId, true))),
+      ),
+      setLineEnabled: payloadHandler(parseSetLineEnabledInput, ({ workspaceId, enabled }) =>
+        runCauseEffect(messaging.setEnabled("line", workspaceId, enabled)),
+      ),
+      addLineOrchestrator: payloadHandler(parseAddTelegramOrchestratorInput, (input) =>
+        runCauseEffect(messaging.addLineOrchestrator(input)),
+      ),
+      answerLineRequest: payloadHandler(parseAnswerLineRequestInput, ({ workspaceId, senderId, approve }) =>
+        runCauseEffect(messaging.answerLineRequest(workspaceId, senderId, approve)),
+      ),
+      removeLineSender: payloadHandler(parseRemoveLineSenderInput, ({ workspaceId, senderId }) =>
+        runCauseEffect(messaging.removeLineSender(workspaceId, senderId)),
+      ),
+      setLinePublicUrl: payloadHandler(parseSetLinePublicUrlInput, ({ workspaceId, publicUrl }) =>
+        runCauseEffect(messaging.setLinePublicUrl(workspaceId, publicUrl)),
       ),
       hostOverview: scopedHandler(parseHostMessagingPlatformInput, {
         local: ({ platform }) => overview(platform),

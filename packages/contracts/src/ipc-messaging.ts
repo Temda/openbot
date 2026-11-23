@@ -4,7 +4,7 @@ import { isBoundedString, isIdentifier, isNullableBoundedString } from "./ipc-bo
 import { isBoolean, isDynamicRecord, isOneOf } from "./runtime-values";
 import { TELEGRAM_ROUTE_CHATS_LIMIT } from "./signal-protocol/telegram-route";
 
-export const MESSAGING_PLATFORMS = ["slack", "discord", "telegram", "whatsapp"] as const;
+export const MESSAGING_PLATFORMS = ["slack", "discord", "telegram", "whatsapp", "line"] as const;
 export type MessagingPlatform = (typeof MESSAGING_PLATFORMS)[number];
 export const CONNECTOR_MESSAGING_PLATFORMS = ["slack", "discord", "telegram"] as const;
 export type ConnectorMessagingPlatform = (typeof CONNECTOR_MESSAGING_PLATFORMS)[number];
@@ -503,4 +503,134 @@ export function parseWhatsAppRequestCode(value: unknown): string | null {
   if (typeof value !== "string") return null;
   const code = value.trim().toUpperCase();
   return WHATSAPP_CODE.test(code) ? code : null;
+}
+
+export interface LineSender {
+  id: string;
+  name: string;
+}
+
+export interface LinePendingRequest {
+  senderId: string;
+  name: string;
+  expiresAt: string;
+}
+
+export const LINE_WEBHOOK_STATES = ["unknown", "verified", "failed"] as const;
+export type LineWebhookState = (typeof LINE_WEBHOOK_STATES)[number];
+
+export interface LineAccount {
+  workspaceId: string;
+  webhook: LineWebhookState;
+  webhookReason: string | null;
+  webhookPort: number;
+  localWebhookUrl: string;
+  publicUrl: string | null;
+  quotaExceeded: boolean;
+  allowedSenders: LineSender[];
+  pendingRequests: LinePendingRequest[];
+}
+
+export interface LineOverview extends MessagingOverview {
+  accounts: LineAccount[];
+}
+
+export interface ConnectLineInput {
+  channelAccessToken: string;
+  channelSecret: string;
+}
+
+export interface ConnectLineResult {
+  workspaceId: string;
+}
+
+export interface RemoveLineSenderInput {
+  workspaceId: string;
+  senderId: string;
+}
+
+export interface AnswerLineRequestInput {
+  workspaceId: string;
+  senderId: string;
+  approve: boolean;
+}
+
+export interface SetLinePublicUrlInput {
+  workspaceId: string;
+  publicUrl: string | null;
+}
+
+export type AddLineOrchestratorInput = Omit<AddMessagingOrchestratorInput, "workspaceId">;
+
+export const LINE_LIMITS = {
+  channelAccessToken: 1_024,
+  channelSecret: 256,
+  publicUrl: 512,
+  webhookReason: 128,
+} as const;
+
+const LINE_CREDENTIAL = /^[!-~]+$/u;
+const LINE_PORT_MAX = 65_535;
+
+export function isLineSender(value: unknown): value is LineSender {
+  return isDynamicRecord(value) && isIdentifier(value.id) && isBoundedString(value.name, MESSAGING_LIMITS.name);
+}
+
+function isLinePendingRequest(value: unknown): value is LinePendingRequest {
+  return (
+    isDynamicRecord(value) &&
+    isIdentifier(value.senderId) &&
+    isBoundedString(value.name, MESSAGING_LIMITS.name) &&
+    isBoundedString(value.expiresAt, 64)
+  );
+}
+
+function isLineAccount(value: unknown): value is LineAccount {
+  return (
+    isDynamicRecord(value) &&
+    isIdentifier(value.workspaceId) &&
+    isOneOf(LINE_WEBHOOK_STATES, value.webhook) &&
+    isNullableBoundedString(value.webhookReason, LINE_LIMITS.webhookReason) &&
+    typeof value.webhookPort === "number" &&
+    Number.isInteger(value.webhookPort) &&
+    value.webhookPort >= 0 &&
+    value.webhookPort <= LINE_PORT_MAX &&
+    isBoundedString(value.localWebhookUrl, LINE_LIMITS.publicUrl) &&
+    isNullableBoundedString(value.publicUrl, LINE_LIMITS.publicUrl) &&
+    isBoolean(value.quotaExceeded) &&
+    Array.isArray(value.allowedSenders) &&
+    value.allowedSenders.length <= MESSAGING_LIMITS.allowedSenders &&
+    value.allowedSenders.every(isLineSender) &&
+    Array.isArray(value.pendingRequests) &&
+    value.pendingRequests.length <= MESSAGING_LIMITS.pendingRequests &&
+    value.pendingRequests.every(isLinePendingRequest)
+  );
+}
+
+export function isLineOverview(value: unknown): value is LineOverview {
+  return (
+    isMessagingOverview(value) &&
+    isDynamicRecord(value) &&
+    Array.isArray(value.accounts) &&
+    value.accounts.length <= MESSAGING_LIMITS.connections &&
+    value.accounts.every(isLineAccount)
+  );
+}
+
+export function isConnectLineResult(value: unknown): value is ConnectLineResult {
+  return isDynamicRecord(value) && isIdentifier(value.workspaceId);
+}
+
+export function parseLineCredential(value: unknown, limit: number): string | null {
+  if (typeof value !== "string") return null;
+  const trimmed = value.trim();
+  return trimmed.length > 0 && trimmed.length <= limit && LINE_CREDENTIAL.test(trimmed) ? trimmed : null;
+}
+
+export function parseLinePublicUrl(value: unknown): string | null {
+  if (typeof value !== "string" || value.length > LINE_LIMITS.publicUrl) return null;
+  const url = URL.parse(value.trim());
+  if (url?.protocol !== "https:" || url.hostname === "" || url.username !== "" || url.password !== "") return null;
+  if (url.search !== "" || url.hash !== "") return null;
+  return `${url.origin}${url.pathname.replace(/\/+$/u, "")}`;
 }

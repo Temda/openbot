@@ -393,6 +393,7 @@ core changes:
 | Discord | The Gateway in Signal (`@discordjs/ws`), which passes mentions to the host; calls go through Signal | The id of the first message of a reply chain | Implemented. No privileged intent. |
 | Telegram | The webhook of the one OpenBot bot through Signal, which holds the token | `message_thread_id`, the topic in a forum, `dm` in a direct chat | Implemented. No history API: the host keeps what the bot sees, in memory. |
 | WhatsApp | A linked device: this computer's own socket to WhatsApp (vendored Baileys, `packages/whatsapp`) | `dm` in a direct chat; in a group, the id of the message that mentioned the number | Implemented. No history: the host saves what it saw for 90 days (`projection_messaging_history`). Sender rules in `whatsapp-senders.ts`. |
+| LINE | A local webhook listener of the host on a fixed loopback port; the user points a tunnel with an https address at it. The first correctly signed request proves the channel secret | `dm` (direct text messages only) | Implemented in the backend; local only. No history and no edits: an answer is a `reply` with the one-minute reply token, or a `push`. Sender rules in `line-senders.ts`. |
 
 Then add the platform to `MESSAGING_PLATFORMS`, a page in Marketplace → Apps, and its i18n
 keys. The database needs no migration: `platform` has no `CHECK`.

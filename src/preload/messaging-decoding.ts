@@ -1,15 +1,19 @@
 import {
   type AddMessagingOrchestratorResult,
+  type ConnectLineResult,
   type DiscordAccess,
   type DiscordRoleList,
   isAddMessagingOrchestratorResult,
+  isConnectLineResult,
   isDiscordAccess,
   isDiscordRoleList,
+  isLineOverview,
   isMessagingOverview,
   isTelegramOverview,
   isWhatsAppGroupList,
   isWhatsAppLinkState,
   isWhatsAppOverview,
+  type LineOverview,
   type MessagingOverview,
   type TelegramOverview,
   type WhatsAppGroupList,
@@ -54,5 +58,15 @@ export function decodeWhatsAppLinkStateReply(value: unknown): WhatsAppLinkState 
 
 export function decodeWhatsAppGroupsReply(value: unknown): WhatsAppGroupList {
   if (!isWhatsAppGroupList(value)) throw new Error("Invalid WhatsApp groups response.");
+  return value;
+}
+
+export function decodeLineOverviewReply(value: unknown): LineOverview {
+  if (!isLineOverview(value)) throw new Error("Invalid LINE overview response.");
+  return value;
+}
+
+export function decodeConnectLineReply(value: unknown): ConnectLineResult {
+  if (!isConnectLineResult(value)) throw new Error("Invalid LINE connect response.");
   return value;
 }

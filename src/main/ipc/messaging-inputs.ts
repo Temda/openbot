@@ -1,7 +1,9 @@
 import type {
   AddMessagingOrchestratorInput,
   AddTelegramOrchestratorInput,
+  AnswerLineRequestInput,
   AnswerWhatsAppRequestInput,
+  ConnectLineInput,
   ConnectorMessagingPlatform,
   ConnectTelegramChatInput,
   HostAddMessagingOrchestratorInput,
@@ -10,8 +12,10 @@ import type {
   HostMessagingWorkspaceInput,
   HostSetMessagingEnabledInput,
   MessagingWorkspaceInput,
+  RemoveLineSenderInput,
   RemoveWhatsAppSenderInput,
   SetDiscordAccessInput,
+  SetLinePublicUrlInput,
   SetMessagingEnabledInput,
   SetWhatsAppOwnNumberInput,
   SetWhatsAppStatusReactionsInput,
@@ -25,7 +29,10 @@ import {
   isAgentProvider,
   isReasoningEffort,
   isWhatsAppSender,
+  LINE_LIMITS,
   parseDiscordAllowedRoles,
+  parseLineCredential,
+  parseLinePublicUrl,
   parseWhatsAppPhoneNumber,
   parseWhatsAppRequestCode,
 } from "@openbot/contracts/ipc";
@@ -163,4 +170,53 @@ export function parseSetWhatsAppWorkingMessageInput(value: unknown): SetWhatsApp
 export function parseSetWhatsAppStatusReactionsInput(value: unknown): SetWhatsAppStatusReactionsInput {
   if (!isObject(value) || !isBoolean(value.statusReactions)) throw new Error("A messaging request is invalid.");
   return { workspaceId: requireString(value.workspaceId, "Workspace id"), statusReactions: value.statusReactions };
+}
+
+const IDENTIFIER_SAFE = /^[\w.@:-]+$/u;
+
+function parseLineIdentifier(value: unknown): string {
+  const id = requireString(value, "Identifier");
+  if (!IDENTIFIER_SAFE.test(id)) throw new Error("A messaging request is invalid.");
+  return id;
+}
+
+export function parseConnectLineInput(value: unknown): ConnectLineInput {
+  if (!isObject(value)) throw new Error("A messaging request is invalid.");
+  const channelAccessToken = parseLineCredential(value.channelAccessToken, LINE_LIMITS.channelAccessToken);
+  const channelSecret = parseLineCredential(value.channelSecret, LINE_LIMITS.channelSecret);
+  if (!channelAccessToken || !channelSecret) throw new Error("A messaging request is invalid.");
+  return { channelAccessToken, channelSecret };
+}
+
+export function parseLineWorkspaceInput(value: unknown): MessagingWorkspaceInput {
+  if (!isObject(value)) throw new Error("A messaging request is invalid.");
+  return { workspaceId: parseLineIdentifier(value.workspaceId) };
+}
+
+export function parseSetLineEnabledInput(value: unknown): SetMessagingEnabledInput {
+  if (!isObject(value) || !isBoolean(value.enabled)) throw new Error("A messaging request is invalid.");
+  return { workspaceId: parseLineIdentifier(value.workspaceId), enabled: value.enabled };
+}
+
+export function parseRemoveLineSenderInput(value: unknown): RemoveLineSenderInput {
+  if (!isObject(value)) throw new Error("A messaging request is invalid.");
+  return { workspaceId: parseLineIdentifier(value.workspaceId), senderId: parseLineIdentifier(value.senderId) };
+}
+
+export function parseAnswerLineRequestInput(value: unknown): AnswerLineRequestInput {
+  if (!isObject(value) || !isBoolean(value.approve)) throw new Error("A messaging request is invalid.");
+  return {
+    workspaceId: parseLineIdentifier(value.workspaceId),
+    senderId: parseLineIdentifier(value.senderId),
+    approve: value.approve,
+  };
+}
+
+export function parseSetLinePublicUrlInput(value: unknown): SetLinePublicUrlInput {
+  if (!isObject(value)) throw new Error("A messaging request is invalid.");
+  const workspaceId = parseLineIdentifier(value.workspaceId);
+  if (value.publicUrl === null) return { workspaceId, publicUrl: null };
+  const publicUrl = parseLinePublicUrl(value.publicUrl);
+  if (!publicUrl) throw new Error("A messaging request is invalid.");
+  return { workspaceId, publicUrl };
 }

@@ -242,6 +242,7 @@ export const PLATFORM_NAMES: Record<MessagingPlatform, string> = {
   discord: "Discord",
   telegram: "Telegram",
   whatsapp: "WhatsApp",
+  line: "LINE",
 };
 
 export class MessagingThreads {

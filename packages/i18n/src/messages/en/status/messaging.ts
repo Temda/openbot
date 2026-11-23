@@ -57,4 +57,9 @@ export const messages = defineMessages("status.messaging", {
     "OpenBot stopped answering here for 10 minutes: too many messages came in a short time. If another OpenBot is linked to this number, open Linked devices in WhatsApp on your phone and log out the OpenBot that you do not use.",
   "status.messaging.whatsappOrchestratorName": "WhatsApp Orchestrator",
   "status.messaging.whatsappOrchestratorTitle": "Answers in WhatsApp and asks the team",
+  "status.messaging.lineNoAgent": "No agent can answer here yet. Add the LINE Orchestrator in OpenBot.",
+  "status.messaging.linePairingNotice":
+    "This account answers only people that its owner allowed. The owner got your request. Write again after the owner approves it.",
+  "status.messaging.lineOrchestratorName": "LINE Orchestrator",
+  "status.messaging.lineOrchestratorTitle": "Answers in LINE and asks the team",
 });

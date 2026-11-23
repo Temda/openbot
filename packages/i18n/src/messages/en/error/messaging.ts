@@ -23,5 +23,13 @@ export const messages = defineMessages("error.messaging", {
   "error.messaging.whatsappNumberNotFound":
     "This number has no WhatsApp account. Type it with its country code, such as +44 7700 900123.",
   "error.messaging.whatsappRequestEnded": "This request ended. Ask the person to write again for a new code.",
+  "error.messaging.lineNotConnected": "This LINE account is not connected.",
+  "error.messaging.lineUnsupported": "This computer cannot connect to LINE.",
+  "error.messaging.lineInvalidToken":
+    "LINE did not accept the channel access token. Copy it again from the LINE Developers Console.",
+  "error.messaging.lineUnreachable": "OpenBot cannot reach LINE now. Check the internet connection and try again.",
+  "error.messaging.lineTooManySenders": "A LINE account can allow up to 200 people.",
+  "error.messaging.lineRequestEnded": "This request ended. Ask the person to write again.",
+  "error.messaging.linePublicUrlInvalid": "Enter an address that starts with https://, such as https://example.com.",
   "error.messaging.memoryLimit": "A connected workspace can have up to {limit} memories. Delete one first.",
 });

@@ -30,6 +30,7 @@ const PLATFORM_WORDS: Record<MessagingPlatform, { name: string; workspace: strin
   discord: { name: "Discord", workspace: "Discord server", conversation: "in a chain of replies" },
   telegram: { name: "Telegram", workspace: "Telegram chat", conversation: "in a reply chain" },
   whatsapp: { name: "WhatsApp", workspace: "WhatsApp number", conversation: "in a reply chain" },
+  line: { name: "LINE", workspace: "LINE Official Account", conversation: "in a direct chat" },
 };
 const MENTION_GUIDANCE: Partial<Record<MessagingPlatform, string>> = {
   telegram:

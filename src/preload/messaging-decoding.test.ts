@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
+  decodeConnectLineReply,
+  decodeLineOverviewReply,
   decodeWhatsAppGroupsReply,
   decodeWhatsAppLinkStateReply,
   decodeWhatsAppOverviewReply,
@@ -76,4 +78,64 @@ describe("WhatsApp replies from main", () => {
   ])("rejects a malformed group list %#", (value) => {
     expect(() => decodeWhatsAppGroupsReply(value)).toThrow();
   });
+});
+
+const lineConnection = { ...connection, workspaceId: "U00000000000000000000000000000001", platform: "line" };
+const lineAccount = {
+  workspaceId: "U00000000000000000000000000000001",
+  webhook: "verified",
+  webhookReason: null,
+  webhookPort: 3101,
+  localWebhookUrl: "http://127.0.0.1:3101/line/webhook",
+  publicUrl: "https://preview.example.com",
+  quotaExceeded: false,
+  allowedSenders: [{ id: "U00000000000000000000000000000002", name: "Ada" }],
+  pendingRequests: [
+    { senderId: "U00000000000000000000000000000003", name: "Grace", expiresAt: "2026-10-30T12:00:00.000Z" },
+  ],
+};
+const lineOverview = { connections: [lineConnection], accounts: [lineAccount] };
+
+describe("LINE replies from main", () => {
+  it("accepts an overview and a connect result", () => {
+    expect(decodeLineOverviewReply(lineOverview)).toEqual(lineOverview);
+    expect(decodeLineOverviewReply({ ...lineOverview, accounts: [{ ...lineAccount, publicUrl: null }] })).toMatchObject(
+      {
+        accounts: [{ publicUrl: null }],
+      },
+    );
+    expect(decodeConnectLineReply({ workspaceId: lineAccount.workspaceId })).toEqual({
+      workspaceId: lineAccount.workspaceId,
+    });
+  });
+
+  it.each([
+    { ...lineOverview, accounts: undefined },
+    { ...lineOverview, connections: [{ ...lineConnection, platform: "signal" }] },
+    { ...lineOverview, accounts: [{ ...lineAccount, webhook: "pending" }] },
+    { ...lineOverview, accounts: [{ ...lineAccount, webhookPort: 70_000 }] },
+    { ...lineOverview, accounts: [{ ...lineAccount, webhookPort: 3101.5 }] },
+    { ...lineOverview, accounts: [{ ...lineAccount, quotaExceeded: "no" }] },
+    { ...lineOverview, accounts: [{ ...lineAccount, publicUrl: "x".repeat(513) }] },
+    { ...lineOverview, accounts: [{ ...lineAccount, allowedSenders: [{ id: "", name: "Ada" }] }] },
+    { ...lineOverview, accounts: [{ ...lineAccount, allowedSenders: [{ id: "U1", name: "x".repeat(257) }] }] },
+    {
+      ...lineOverview,
+      accounts: [{ ...lineAccount, pendingRequests: [{ ...lineAccount.pendingRequests[0], senderId: 3 }] }],
+    },
+    {
+      ...lineOverview,
+      accounts: [{ ...lineAccount, pendingRequests: Array.from({ length: 4 }, () => lineAccount.pendingRequests[0]) }],
+    },
+    null,
+  ])("rejects a malformed overview %#", (value) => {
+    expect(() => decodeLineOverviewReply(value)).toThrow();
+  });
+
+  it.each([{}, { workspaceId: "" }, { workspaceId: 7 }, "U1", null])(
+    "rejects a malformed connect result %#",
+    (value) => {
+      expect(() => decodeConnectLineReply(value)).toThrow();
+    },
+  );
 });

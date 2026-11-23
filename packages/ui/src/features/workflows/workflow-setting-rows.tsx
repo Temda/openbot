@@ -1,5 +1,5 @@
 import type { MessagingPlatform } from "@openbot/contracts/ipc";
-import { Bot, ChevronDown, DropdownMenu, Hash, Input } from "@openbot/ui";
+import { Bot, ChevronDown, DropdownMenu, Hash, Input, MessageCircle } from "@openbot/ui";
 import type { JSX } from "@solidjs/web";
 import { For, Show, untrack } from "solid-js";
 import { useText } from "../../text";
@@ -271,6 +271,7 @@ const PLATFORM_MARKS: Record<MessagingPlatform, (props: { class?: string }) => J
   discord: DiscordMark,
   telegram: TelegramMark,
   whatsapp: WhatsAppMark,
+  line: (props) => <MessageCircle class={props.class} aria-hidden="true" />,
 };
 
 const channelKey = (channelId: string) => JSON.stringify([channelId]);

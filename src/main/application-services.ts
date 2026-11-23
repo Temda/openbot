@@ -102,6 +102,8 @@ import { MailboxStore } from "../backend/mailbox-store";
 import { McpOAuth } from "../backend/mcp-oauth-provider";
 import { DiscordConnectFailed, toDiscordConnectFailed } from "../backend/messaging/discord/discord-connect";
 import { discordDriver, downloadDiscordAttachment } from "../backend/messaging/discord/discord-driver";
+import { lineDriver } from "../backend/messaging/line/line-driver";
+import { LineRuntime } from "../backend/messaging/line/line-runtime";
 import { MessagingOperationFailed, MessagingService } from "../backend/messaging/messaging-service";
 import { SlackConnectFailed, toSlackConnectFailed } from "../backend/messaging/slack/slack-connect";
 import { slackDriver } from "../backend/messaging/slack/slack-driver";
@@ -863,6 +865,7 @@ async function createMessagingServices({
     createSocket: (config) => makeWASocket(config),
     makeSignalRepository: makeOpenBotSignalRepository,
   });
+  const line = new LineRuntime();
   const messaging = new MessagingService({
     threads: service.messaging,
     agents: {
@@ -885,11 +888,13 @@ async function createMessagingServices({
       discordDriver({ ingress: signalIngress }),
       telegramDriver({ ingress: signalIngress, history: service.messaging.history }),
       whatsAppDriver({ runtime: whatsapp }),
+      lineDriver({ runtime: line }),
     ],
     downloadsRoot: join(app.getPath("userData"), "messaging-downloads"),
     statusPath: join(app.getPath("userData"), "openbot-messaging-status-v1.json"),
     ingress: signalIngress,
     whatsapp,
+    line,
     sidebar: sidebarLayout,
     slackApp: {
       authorize: (input) =>

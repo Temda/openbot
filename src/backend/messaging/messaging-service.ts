@@ -9,9 +9,11 @@ import type {
   AgentApproval,
   AgentEvent,
   AgentSummary,
+  ConnectLineInput,
   ConnectTelegramChatInput,
   DiscordAccess,
   DiscordRoleList,
+  LineOverview,
   MessagingConnection,
   MessagingConnectionState,
   MessagingConnectPage,
@@ -43,6 +45,11 @@ import type { MessagingOrigin } from "../mailbox-store";
 import type { SidebarLayoutStore } from "../sidebar-layout-store";
 import { type DiscordAppPort, DiscordConnect, type DiscordConnectFailed } from "./discord/discord-connect";
 import { discordOrchestratorMemories, discordOrchestratorProfile } from "./discord/discord-orchestrator";
+import { LineApiError } from "./line/line-api";
+import { LineConnect } from "./line/line-connect";
+import { LINE_ORCHESTRATOR_AVATAR, lineOrchestratorMemories, lineOrchestratorProfile } from "./line/line-orchestrator";
+import type { LineRuntime } from "./line/line-runtime";
+import { LINE_PLACE_NOT_ALLOWED } from "./line/line-senders";
 import { matchesHistoryFilter } from "./messaging-history-store";
 import { mentionNames, withMentionNames } from "./messaging-mentions";
 import { QUIET_ANSWER } from "./messaging-prompt";
@@ -139,6 +146,7 @@ export interface MessagingServiceOptions {
   slackOrigin?: string;
   telegramApp?: TelegramAppPort;
   whatsapp?: WhatsAppRuntime;
+  line?: LineRuntime;
   sidebar?: Pick<SidebarLayoutStore, "getSnapshot" | "mutate" | "removeAgent">;
   statusPath?: string;
 }
@@ -209,6 +217,7 @@ export class MessagingService {
   readonly #telegramApp: TelegramAppPort | null;
   readonly #whatsapp: WhatsAppConnect | null;
   readonly #whatsappRuntime: WhatsAppRuntime | null;
+  readonly #line: LineConnect | null;
   readonly #sidebar: Pick<SidebarLayoutStore, "getSnapshot" | "mutate" | "removeAgent"> | null;
   #started = false;
   #connectionsStarted = false;
@@ -234,9 +243,20 @@ export class MessagingService {
           history: options.threads.history,
           credentials: options.credentials,
           hooks: {
-            prepare: (workspaceId, workspaceName) => this.#prepareWhatsApp(workspaceId, workspaceName),
-            finish: (connectionId, values) => this.#finishWhatsApp(connectionId, values),
+            prepare: (workspaceId, workspaceName) => this.#prepareConnection("whatsapp", workspaceId, workspaceName),
+            finish: (connectionId, values) => this.#finishConnection("whatsapp", connectionId, values),
             dispatch: (operation) => this.#dispatch(operation),
+          },
+        })
+      : null;
+    this.#line = options.line
+      ? new LineConnect({
+          runtime: options.line,
+          store: options.threads.store,
+          credentials: options.credentials,
+          hooks: {
+            prepare: (workspaceId, workspaceName) => this.#prepareConnection("line", workspaceId, workspaceName),
+            finish: (connectionId, values) => this.#finishConnection("line", connectionId, values),
           },
         })
       : null;
@@ -357,6 +377,10 @@ export class MessagingService {
     return { ...this.#overview("whatsapp"), accounts: this.#whatsapp?.accounts() ?? [] };
   }
 
+  lineOverview(): LineOverview {
+    return { ...this.#overview("line"), accounts: this.#line?.accounts() ?? [] };
+  }
+
   whatsappLinkState(): WhatsAppLinkState {
     return this.#whatsapp?.linkState() ?? { status: "idle", qr: null, code: null, workspaceId: null, error: null };
   }
@@ -460,20 +484,81 @@ export class MessagingService {
     if (orphan) yield* this.#deleteOrchestrator(orphan);
   }, Effect.uninterruptible).bind(this);
 
-  readonly #prepareWhatsApp = Effect.fn("MessagingService.prepareWhatsApp")(function* (
+  readonly connectLine = Effect.fn("MessagingService.connectLine")(function* (
     this: MessagingService,
+    input: ConnectLineInput,
+  ) {
+    const line = yield* messagingStep(() => this.#requireLine());
+    return yield* line.connect(input).pipe(toMessagingOperationFailed);
+  }).bind(this);
+
+  readonly disconnectLine = Effect.fn("MessagingService.disconnectLine")(function* (
+    this: MessagingService,
+    workspaceId: string,
+  ) {
+    const line = yield* messagingStep(() => this.#requireLine());
+    const record = yield* messagingStep(() => this.#requireConnection("line", workspaceId));
+    const orphan = yield* this.#orphanedOrchestrator(record);
+    yield* this.#stopConnection(record.connectionId);
+    yield* this.#credentials.clear(record.connectionId);
+    yield* messagingStep(() =>
+      this.#threads.store.updateConnection(record.connectionId, { enabled: false, lastErrorCode: null }),
+    );
+    line.forget(workspaceId);
+    if (orphan) yield* this.#deleteOrchestrator(orphan);
+  }, Effect.uninterruptible).bind(this);
+
+  readonly answerLineRequest = Effect.fn("MessagingService.answerLineRequest")(function* (
+    this: MessagingService,
+    workspaceId: string,
+    senderId: string,
+    approve: boolean,
+  ) {
+    const line = yield* messagingStep(() => this.#requireLine());
+    yield* line.answerRequest(workspaceId, senderId, approve).pipe(toMessagingOperationFailed);
+  }).bind(this);
+
+  readonly removeLineSender = Effect.fn("MessagingService.removeLineSender")(function* (
+    this: MessagingService,
+    workspaceId: string,
+    senderId: string,
+  ) {
+    const line = yield* messagingStep(() => this.#requireLine());
+    yield* line.removeSender(workspaceId, senderId).pipe(toMessagingOperationFailed);
+  }).bind(this);
+
+  readonly setLinePublicUrl = Effect.fn("MessagingService.setLinePublicUrl")(function* (
+    this: MessagingService,
+    workspaceId: string,
+    publicUrl: string | null,
+  ) {
+    const line = yield* messagingStep(() => this.#requireLine());
+    yield* line.setPublicUrl(workspaceId, publicUrl).pipe(toMessagingOperationFailed);
+  }).bind(this);
+
+  readonly addLineOrchestrator = Effect.fn("MessagingService.addLineOrchestrator")(function* (
+    this: MessagingService,
+    input: AddTelegramOrchestratorInput,
+  ) {
+    return yield* this.#addSharedOrchestrator("line", input);
+  }, Effect.uninterruptible).bind(this);
+
+  readonly #prepareConnection = Effect.fn("MessagingService.prepareConnection")(function* (
+    this: MessagingService,
+    platform: "whatsapp" | "line",
     workspaceId: string,
     workspaceName: string,
   ) {
     const record = yield* messagingStep(() =>
-      this.#threads.store.ensureConnection("whatsapp", workspaceId, workspaceName),
+      this.#threads.store.ensureConnection(platform, workspaceId, workspaceName),
     );
     yield* this.#stopConnection(record.connectionId);
     return record.connectionId;
   });
 
-  readonly #finishWhatsApp = Effect.fn("MessagingService.finishWhatsApp")(function* (
+  readonly #finishConnection = Effect.fn("MessagingService.finishConnection")(function* (
     this: MessagingService,
+    platform: "whatsapp" | "line",
     connectionId: string,
     values: Record<string, string>,
   ) {
@@ -483,14 +568,17 @@ export class MessagingService {
     this.#threads.store.updateConnection(connectionId, {
       enabled: true,
       lastErrorCode: null,
-      orchestratorAgentId: this.#orchestrator(record) ?? this.#platformOrchestrator("whatsapp"),
+      orchestratorAgentId: this.#orchestrator(record) ?? this.#platformOrchestrator(platform),
     });
     const updated = this.#threads.store.connection(connectionId);
     if (updated) yield* this.#startConnection(updated);
   }, Effect.uninterruptible);
 
   #withoutStatusPost(connectionId: string): boolean {
-    return this.#whatsapp?.workingMessage(connectionId) === false;
+    return (
+      this.#whatsapp?.workingMessage(connectionId) === false ||
+      this.#threads.store.connection(connectionId)?.platform === "line"
+    );
   }
 
   #react(
@@ -506,6 +594,11 @@ export class MessagingService {
 
   #quietEnd(connectionId: string, target: MessageTarget): boolean {
     return this.#whatsapp?.postsAsOwner(connectionId, target.platformChannelId) === true;
+  }
+
+  #requireLine(): LineConnect {
+    if (!this.#line) throw new Error(sourceText("error.messaging.lineUnsupported"));
+    return this.#line;
   }
 
   #requireWhatsApp(): WhatsAppConnect {
@@ -563,7 +656,7 @@ export class MessagingService {
     platform: MessagingPlatform,
     input: AddMessagingOrchestratorInput,
   ) {
-    if (platform === "whatsapp") return yield* this.#addSharedOrchestrator(platform, input);
+    if (platform === "whatsapp" || platform === "line") return yield* this.#addSharedOrchestrator(platform, input);
     const record = yield* messagingStep(() => this.#requireConnection(platform, input.workspaceId));
     const current = this.#orchestrator(record) ?? this.#platformOrchestrator(platform);
     if (current) {
@@ -844,7 +937,7 @@ export class MessagingService {
 
   readonly #addSharedOrchestrator = Effect.fn("MessagingService.addSharedOrchestrator")(function* (
     this: MessagingService,
-    platform: "telegram" | "whatsapp",
+    platform: "telegram" | "whatsapp" | "line",
     input: AddTelegramOrchestratorInput,
   ) {
     const records = this.#threads.store.connections().filter((record) => record.platform === platform);
@@ -852,7 +945,11 @@ export class MessagingService {
       return yield* new MessagingOperationFailed({
         cause: new Error(
           sourceText(
-            platform === "telegram" ? "error.messaging.telegramNotConnected" : "error.messaging.whatsappNotConnected",
+            platform === "telegram"
+              ? "error.messaging.telegramNotConnected"
+              : platform === "line"
+                ? "error.messaging.lineNotConnected"
+                : "error.messaging.whatsappNotConnected",
           ),
         ),
       });
@@ -861,19 +958,17 @@ export class MessagingService {
       this.#assignSharedOrchestrator(platform, current);
       return { agentId: current, sectionId: null };
     }
-    const telegram = platform === "telegram";
     const agent = yield* this.#agents
       .createAgentProfile({
-        ...(telegram ? telegramOrchestratorProfile() : whatsAppOrchestratorProfile()),
-        ...(telegram ? TELEGRAM_ORCHESTRATOR_AVATAR : WHATSAPP_ORCHESTRATOR_AVATAR),
+        ...sharedOrchestratorProfile(platform),
+        ...sharedOrchestratorAvatar(platform),
         ...(input.provider ? { provider: input.provider } : {}),
         ...(input.model ? { model: input.model } : {}),
         ...(input.reasoningEffort ? { reasoningEffort: input.reasoningEffort } : {}),
         startOnRunnableProvider: true,
       })
       .pipe(toMessagingOperationFailed);
-    const memories = telegram ? telegramOrchestratorMemories() : whatsAppOrchestratorMemories();
-    for (const text of memories) this.#agents.createMemory({ agentId: agent.id, text });
+    for (const text of sharedOrchestratorMemories(platform)) this.#agents.createMemory({ agentId: agent.id, text });
     this.#assignSharedOrchestrator(platform, agent.id);
     const sectionId = yield* this.#placeInIntegrations(agent.id).pipe(
       Effect.catch((failure) => {
@@ -1073,7 +1168,7 @@ export class MessagingService {
         this.#threads.store.updateConnection(record.connectionId, { orchestratorAgentId: agentId });
   }
 
-  #assignSharedOrchestrator(platform: "telegram" | "whatsapp", agentId: string): void {
+  #assignSharedOrchestrator(platform: "telegram" | "whatsapp" | "line", agentId: string): void {
     for (const record of this.#threads.store.connections())
       if (record.platform === platform && record.orchestratorAgentId !== agentId)
         this.#threads.store.updateConnection(record.connectionId, { orchestratorAgentId: agentId });
@@ -1210,7 +1305,7 @@ export class MessagingService {
       const unlink:
         | Effect.Effect<void, DiscordConnectFailed | SlackConnectFailed | MessagingOperationFailed>
         | undefined =
-        live.record.platform === "whatsapp"
+        live.record.platform === "whatsapp" || live.record.platform === "line"
           ? undefined
           : live.record.platform === "telegram"
             ? this.#telegramApp?.unlink(live.record.workspaceId)
@@ -1399,7 +1494,9 @@ export class MessagingService {
             ? "status.messaging.telegramNoAgent"
             : live.record.platform === "whatsapp"
               ? "status.messaging.whatsappNoAgent"
-              : "status.messaging.noAgent";
+              : live.record.platform === "line"
+                ? "status.messaging.lineNoAgent"
+                : "status.messaging.noAgent";
       yield* adapter.post(message.target, { text: sourceText(noAgent) }).pipe(toMessagingOperationFailed);
       return;
     }
@@ -1603,9 +1700,9 @@ export class MessagingService {
   ) {
     const live = this.#live.get(connectionId);
     if (!live?.identity) return { error: MESSAGING_NOT_RUNNING };
-    const whatsApp = live.record.platform === "whatsapp";
+    const note = ALLOWED_PLACES_NOTES.get(live.record.platform);
     return yield* live.adapter.places().pipe(
-      Effect.map((list) => (whatsApp ? { ...list, note: WHATSAPP_ALLOWED_PLACES } : list)),
+      Effect.map((list) => (note ? { ...list, note } : list)),
       Effect.catch((failure) => Effect.succeed({ error: refusal(failure) })),
     );
   });
@@ -2277,7 +2374,9 @@ export class MessagingService {
               ? "error.messaging.telegramNotConnected"
               : platform === "whatsapp"
                 ? "error.messaging.whatsappNotConnected"
-                : "error.messaging.notConnected",
+                : platform === "line"
+                  ? "error.messaging.lineNotConnected"
+                  : "error.messaging.notConnected",
         ),
       );
     return record;
@@ -2369,6 +2468,32 @@ function redactEmbed(embed: DiscordEmbed): DiscordEmbed {
 const WHATSAPP_ALLOWED_PLACES =
   "This list has only the WhatsApp chats that the user allowed, not all chats of this number. For a chat that is not in it, tell the user to open Marketplace, then Apps, then WhatsApp, and to use Add contact or Add group for this number.";
 
+const LINE_ALLOWED_PLACES =
+  "This list has only the LINE users that the user allowed, not all friends of this Official Account. For a person who is not in it, tell the user to open Marketplace, then Apps, then LINE, and to approve the request of that person.";
+
+const ALLOWED_PLACES_NOTES = new Map<MessagingPlatform, string>([
+  ["whatsapp", WHATSAPP_ALLOWED_PLACES],
+  ["line", LINE_ALLOWED_PLACES],
+]);
+
+const LINE_LOCAL_REFUSALS = new Map([
+  [
+    LINE_PLACE_NOT_ALLOWED,
+    "OpenBot sent nothing: the user did not allow this LINE user. Tell the user to open Marketplace, then Apps, then LINE, and to approve the request of this person. Then the post can go to this user.",
+  ],
+]);
+
+const LINE_FAILURES = new Map([
+  [
+    "quota_exceeded",
+    "LINE did not deliver the message: the Official Account reached its monthly message limit. Do not post it again: tell the user that LINE did not deliver it, and that the limit is in the LINE Official Account Manager.",
+  ],
+  [
+    "invalid_token",
+    "LINE did not accept the channel access token of this Official Account. Tell the user to connect it again in Marketplace, then Apps, then LINE.",
+  ],
+]);
+
 const WHATSAPP_NOT_CONNECTED =
   "WhatsApp is not connected on this number now. Tell the user to open Marketplace, then Apps, then WhatsApp, and to use Reconnect or Link again for this number.";
 
@@ -2399,6 +2524,30 @@ const TELEGRAM_RELAY_REFUSALS = new Map([
   ],
 ]);
 
+function sharedOrchestratorProfile(platform: "telegram" | "whatsapp" | "line") {
+  return platform === "telegram"
+    ? telegramOrchestratorProfile()
+    : platform === "line"
+      ? lineOrchestratorProfile()
+      : whatsAppOrchestratorProfile();
+}
+
+function sharedOrchestratorAvatar(platform: "telegram" | "whatsapp" | "line") {
+  return platform === "telegram"
+    ? TELEGRAM_ORCHESTRATOR_AVATAR
+    : platform === "line"
+      ? LINE_ORCHESTRATOR_AVATAR
+      : WHATSAPP_ORCHESTRATOR_AVATAR;
+}
+
+function sharedOrchestratorMemories(platform: "telegram" | "whatsapp" | "line"): string[] {
+  return platform === "telegram"
+    ? telegramOrchestratorMemories()
+    : platform === "line"
+      ? lineOrchestratorMemories()
+      : whatsAppOrchestratorMemories();
+}
+
 function telegramNotReady(state: IngressState): MessagingOperationFailed {
   const text =
     state === "online"
@@ -2413,8 +2562,16 @@ function refusal(failure: MessagingAdapterError): string {
   const cause = failure.cause;
   if (cause instanceof WhatsAppRefusedError)
     return `WhatsApp refused the message: ${cause.code}. It was not delivered. Do not post it again: tell the user that WhatsApp did not deliver it.`;
-  const local = cause instanceof Error ? WHATSAPP_LOCAL_REFUSALS.get(cause.message) : undefined;
+  const local =
+    cause instanceof Error
+      ? (WHATSAPP_LOCAL_REFUSALS.get(cause.message) ?? LINE_LOCAL_REFUSALS.get(cause.message))
+      : undefined;
   if (local) return local;
+  if (cause instanceof LineApiError)
+    return (
+      LINE_FAILURES.get(cause.failure) ??
+      `LINE refused the call: ${cause.failure}. Check the connection and place ids with openbot.messaging_list_places.`
+    );
   if (cause instanceof DiscordApiError && cause.code === "unknown_guild") return DISCORD_NOT_LINKED;
   const relay =
     cause instanceof TelegramCallError ? TELEGRAM_RELAY_REFUSALS.get(`${cause.code} ${cause.message}`) : undefined;

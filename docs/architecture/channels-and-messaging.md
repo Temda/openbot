@@ -965,6 +965,51 @@ is one linked number (`workspace_id` is the number in digits).
   options, so a routine or a workflow on a joined server can send to WhatsApp. A client without it
   gets `destination: null` for a WhatsApp destination.
 
+**LINE.** One LINE Official Account is one connection (`workspace_id` is the user id of the account, the
+`userId` of `GET /v2/bot/info`). LINE sends events to a webhook, so the host runs its own listener, and
+no OpenBot service takes part: no Signal route, no account service row. LINE needs a public https
+address, so the user points a tunnel at the local port. Direct text messages only. A group, a room and
+every other event type are dropped.
+
+- **Stored.** `MessagingCredentialStore` keeps, for each connection, the channel access token
+  (`channelAccessToken`, the required credential), the channel secret, the user id of the account, the
+  webhook port (`webhookPort`) and the public address (`publicUrl`). `registerSecretValue` covers
+  the token and the secret, and `openbot.db` has the connection and the allowed users
+  (`projection_messaging_allowed_senders`, `kind = 'contact'`). Reply tokens and approval menus are in
+  memory only (`LineRuntime`).
+- **Connect.** `LineConnect.connect` calls `GET /v2/bot/info` with the token; a 401 stops with the
+  invalid token error, and nothing is stored. The channel secret has no check call: the webhook state
+  is `unknown` until the first correctly signed request arrives, then `verified`. The first connect
+  picks a free port, and the connection keeps it. When the saved port is taken at start, the
+  connection shows `error`; it does not move. When the user saves a public address (https only),
+  OpenBot sets the webhook endpoint (`<address>/line/webhook`) and calls the webhook test of LINE; a
+  failed test shows the state `failed` with the reason of LINE.
+- **Listener.** `LineWebhookServer` binds `127.0.0.1` on the saved port, has one route
+  (`POST /line/webhook`), allows 16 connections, answers 413 at once when the declared length is over
+  1 MiB, and checks `X-Line-Signature` over the raw body in constant time before it reads the events.
+  One instance serves one start. It drops an event id that it saw in the last 24 hours.
+- **Senders.** A LINE Official Account is public, and the agents have full access to the computer, so
+  an unknown user reaches no agent. Their first message makes a pending request (at most three, for an
+  hour, in memory) and gets one fixed notice, sent as a `reply`, so it uses no push quota. The owner
+  approves or refuses the request in OpenBot. An approved user is a row of the allowed senders table,
+  with the name from `GET /v2/bot/profile/{userId}`. A user that the owner removed is blocked again.
+- **Answers.** LINE cannot edit, delete or react. `postAnswer` sends the first batch of up to five
+  messages (5000 characters each, as plain text) with `reply` and the token of the message that it
+  answers; the token works once and for about a minute. With no token, or after `invalid_reply_token`,
+  it uses `push`. Every later batch is a `push`. Each push has one `X-Line-Retry-Key`, which stays the
+  same when OpenBot tries that push again (three tries for a 5xx or a network failure); 409 counts as
+  sent. A connection of this platform never posts a "working on it" message and never reacts, so a
+  status post, an edit or a reaction makes no call. Files are not sent: `upload` skips each file.
+- **Approvals and stop.** An approval is a push with the text `1` to approve or `2` to deny. The
+  transport matches the answer to the newest menu of that user. `stop` and `cancel` stop the request, as
+  on WhatsApp.
+- **Limits.** A 429 whose message says that the monthly limit is reached is `quota_exceeded`: OpenBot
+  does not retry it, the connection shows `error`, and the account in the overview has
+  `quotaExceeded`. Replies are free, so an answer with a valid token still goes out. Another 429
+  follows `Retry-After` and shows `rate_limited`.
+- **Joined servers.** Local only for now: there is no host route, no capability and no web or mobile
+  page. A host leaves LINE out of `connectors-v1` and of both routine-results protocols.
+
 ## Mobile chat queue
 
 Mobile reads the host queue, applies `queue-changed` snapshots, and refreshes active queue

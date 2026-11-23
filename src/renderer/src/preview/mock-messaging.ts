@@ -1,9 +1,11 @@
 import {
+  type LineAccount,
   MESSAGING_LIMITS,
   type MessagingConnection,
   type MessagingDesktopApi,
   type MessagingPlatform,
   type MessagingRole,
+  parseLinePublicUrl,
   parseWhatsAppPhoneNumber,
   type StartWhatsAppLinkInput,
   type WhatsAppAccount,
@@ -13,7 +15,7 @@ import {
 import { sourceText } from "@openbot/i18n/source";
 import { clone } from "./mock-support";
 
-type WorkspacePlatform = Exclude<MessagingPlatform, "telegram" | "whatsapp">;
+type WorkspacePlatform = Exclude<MessagingPlatform, "telegram" | "whatsapp" | "line">;
 
 const PREVIEW_WORKSPACE = {
   slack: (count: number) => ({
@@ -47,6 +49,11 @@ const PREVIEW_WHATSAPP_GROUPS: readonly WhatsAppGroup[] = [
   { id: "120363000000000002@g.us", name: "Book club" },
   { id: "120363000000000003@g.us", name: "Acme team" },
 ];
+
+const PREVIEW_LINE_PORT = 3101;
+const PREVIEW_LINE_HOUR_MS = 60 * 60 * 1_000;
+
+const previewLineId = (count: number) => `U${String(count).padStart(32, "0")}`;
 
 const PREVIEW_WHATSAPP_STRANGER = { senderId: "447700900555", name: "Grace Hopper" };
 
@@ -161,6 +168,58 @@ export function createMockMessaging(orchestrator: () => string): MessagingDeskto
         });
       }, TELEGRAM_LINK_MS);
     return workspaceId;
+  };
+  const lines = new Map<string, MessagingConnection>();
+  const lineAccounts = new Map<string, LineAccount>();
+  let lineOrchestrator: string | null = null;
+  let lineCount = 0;
+  const addLine = (): string => {
+    lineCount += 1;
+    const workspaceId = previewLineId(lineCount);
+    lines.set(workspaceId, {
+      workspaceId,
+      platform: "line",
+      enabled: true,
+      state: "connected",
+      workspaceName: lineCount === 1 ? "Preview LINE account" : `Preview LINE account ${lineCount}`,
+      botUserId: workspaceId,
+      missingScopes: [],
+      retryAt: null,
+      credentials: "saved",
+      orchestratorAgentId: lineOrchestrator,
+    });
+    lineAccounts.set(workspaceId, {
+      workspaceId,
+      webhook: lineCount === 1 ? "verified" : "unknown",
+      webhookReason: null,
+      webhookPort: PREVIEW_LINE_PORT + lineCount - 1,
+      localWebhookUrl: `http://127.0.0.1:${PREVIEW_LINE_PORT + lineCount - 1}/line/webhook`,
+      publicUrl: lineCount === 1 ? "https://preview.example.com" : null,
+      quotaExceeded: false,
+      allowedSenders: lineCount === 1 ? [{ id: previewLineId(900), name: "Ada Lovelace" }] : [],
+      pendingRequests:
+        lineCount === 1
+          ? [
+              {
+                senderId: previewLineId(901),
+                name: "Grace Hopper",
+                expiresAt: new Date(Date.now() + PREVIEW_LINE_HOUR_MS).toISOString(),
+              },
+            ]
+          : [],
+    });
+    return workspaceId;
+  };
+  addLine();
+  const changeLine = (workspaceId: string, update: Partial<MessagingConnection>) => {
+    const current = lines.get(workspaceId);
+    if (!current) throw new Error(sourceText("error.messaging.lineNotConnected"));
+    lines.set(workspaceId, { ...current, ...update });
+  };
+  const lineAccount = (workspaceId: string) => {
+    const current = lineAccounts.get(workspaceId);
+    if (!current) throw new Error(sourceText("error.messaging.lineNotConnected"));
+    return current;
   };
   const api: Omit<MessagingDesktopApi, `host${string}`> = {
     getSlackOverview: slack.overview,
@@ -311,6 +370,54 @@ export function createMockMessaging(orchestrator: () => string): MessagingDeskto
     },
     setWhatsAppStatusReactions: async ({ workspaceId, statusReactions }) => {
       accounts.set(workspaceId, { ...account(workspaceId), statusReactions });
+    },
+    getLineOverview: async () => clone({ connections: [...lines.values()], accounts: [...lineAccounts.values()] }),
+    connectLine: async () => ({ workspaceId: addLine() }),
+    disconnectLine: async ({ workspaceId }) => {
+      lines.delete(workspaceId);
+      lineAccounts.delete(workspaceId);
+    },
+    reconnectLine: async ({ workspaceId }) => changeLine(workspaceId, { enabled: true, state: "connected" }),
+    setLineEnabled: async ({ workspaceId, enabled }) =>
+      changeLine(workspaceId, { enabled, state: enabled ? "connected" : "paused" }),
+    addLineOrchestrator: async () => {
+      const agentId = orchestrator();
+      lineOrchestrator = agentId;
+      for (const workspaceId of lines.keys()) changeLine(workspaceId, { orchestratorAgentId: agentId });
+      return { agentId, sectionId: null };
+    },
+    answerLineRequest: async ({ workspaceId, senderId, approve }) => {
+      const current = lineAccount(workspaceId);
+      const request = current.pendingRequests.find((pending) => pending.senderId === senderId);
+      if (!request) throw new Error(sourceText("error.messaging.lineRequestEnded"));
+      if (approve && current.allowedSenders.length >= MESSAGING_LIMITS.allowedSenders)
+        throw new Error(sourceText("error.messaging.lineTooManySenders"));
+      lineAccounts.set(workspaceId, {
+        ...current,
+        pendingRequests: current.pendingRequests.filter((pending) => pending.senderId !== senderId),
+        allowedSenders: approve
+          ? [...current.allowedSenders, { id: request.senderId, name: request.name || request.senderId }]
+          : current.allowedSenders,
+      });
+    },
+    removeLineSender: async ({ workspaceId, senderId }) => {
+      const current = lineAccount(workspaceId);
+      lineAccounts.set(workspaceId, {
+        ...current,
+        allowedSenders: current.allowedSenders.filter((sender) => sender.id !== senderId),
+      });
+    },
+    setLinePublicUrl: async ({ workspaceId, publicUrl }) => {
+      const current = lineAccount(workspaceId);
+      const normalized = publicUrl === null ? null : parseLinePublicUrl(publicUrl);
+      if (publicUrl !== null && normalized === null)
+        throw new Error(sourceText("error.messaging.linePublicUrlInvalid"));
+      lineAccounts.set(workspaceId, {
+        ...current,
+        publicUrl: normalized,
+        webhook: normalized === null ? "unknown" : "verified",
+        webhookReason: null,
+      });
     },
   };
   const overview = { slack: api.getSlackOverview, discord: api.getDiscordOverview, telegram: api.getTelegramOverview };
