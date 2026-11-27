@@ -27,11 +27,13 @@ import {
   getRecord,
   getString,
   isRecord,
+  qualifiedToolName,
   reasoningText,
   type ThreadItem,
 } from "../protocol";
 import {
   GEMINI_INVALID_ARGUMENT,
+  GEMINI_UNREADABLE_HISTORY,
   isImageCountDiagnostic,
   isImageTooLargeDiagnostic,
   isImageTooSmallDiagnostic,
@@ -46,6 +48,7 @@ export function isNonActionableCodexWarning(message: string): boolean {
   return (
     message.startsWith("Skill descriptions were shortened to fit") ||
     message.startsWith("Exceeded skills context budget") ||
+    message.startsWith("Combined user instructions use ") ||
     message.startsWith("Falling back from WebSockets to HTTPS transport.") ||
     message.startsWith("Under-development features enabled:") ||
     message.startsWith("Configured service tier ") ||
@@ -77,7 +80,16 @@ export function isCodexRolloutPending(error: unknown): boolean {
 function isCodexMissingThreadError(error: unknown): boolean {
   return (
     error instanceof AppServerError &&
-    (/thread not found:/i.test(error.message) || /\bno rollout found\b/i.test(error.message))
+    (/thread not found:/i.test(error.message) ||
+      /\bno rollout found\b/i.test(error.message) ||
+      isCodexUnconfiguredThreadProvider(error))
+  );
+}
+
+function isCodexUnconfiguredThreadProvider(error: AppServerError): boolean {
+  return (
+    getString(error.data, "type") === "modelProviderNotConfigured" ||
+    /^This chat uses model provider .+, which is no longer configured\./.test(error.message)
   );
 }
 
@@ -126,7 +138,9 @@ function isCodexRefusedAudio(provider: AgentProvider, message: string): boolean 
 function isRejectedOpenCodeRequest(provider: AgentProvider, message: string): boolean {
   return (
     provider === "opencode" &&
-    /\bthe request contains invalid parameters\b|\bInternal error: Invalid request parameters\b/i.test(message)
+    /\bthe request contains invalid parameters\b|\bInternal error: Invalid request parameters\b|\bUpstream request failed: \[invalid_request\] the request is invalid\b|\bUpstream request failed: \[invalid_request_error\] messages\.\d+\.output_config\b/i.test(
+      message,
+    )
   );
 }
 
@@ -144,8 +158,17 @@ function isClearedAntigravityHistory(provider: AgentProvider, message: string): 
   );
 }
 
-function isUnencodableAntigravityHistory(provider: AgentProvider, message: string): boolean {
-  return provider === "antigravity" && /\bcontains invalid UTF-8\b/.test(message);
+function isUnreadableAntigravityHistory(provider: AgentProvider, message: string): boolean {
+  return provider === "antigravity" && GEMINI_UNREADABLE_HISTORY.test(message);
+}
+
+function isUnsignedAntigravityThinking(provider: AgentProvider, message: string): boolean {
+  return (
+    provider === "antigravity" &&
+    /\bmessages\.\d+\.content\.\d+(?:\.thinking\.signature: Field required|: Invalid `signature` in `thinking` block|: [^\n]*\bthinking\b[^\n]*\bcannot be modified\b)/u.test(
+      message,
+    )
+  );
 }
 
 function isStuckAcpTurn(provider: AgentProvider, message: string): boolean {
@@ -176,6 +199,10 @@ function isMissingClaudeSession(provider: AgentProvider, message: string): boole
   return provider === "claude" && /\bNo conversation found with session ID\b/.test(message);
 }
 
+function isMissingOpenCodeSession(provider: AgentProvider, message: string): boolean {
+  return provider === "opencode" && /\bInvalid params: session not found: \S/.test(message);
+}
+
 function isClaudeContextOverflow(provider: AgentProvider, message: string): boolean {
   return provider === "claude" && /^Prompt is too long\b/.test(message);
 }
@@ -196,6 +223,7 @@ export function refusedSessionFailure(
   provider: AgentProvider,
   message: string,
   contextWindow: number | null = null,
+  imageLimitRepeated = false,
 ): string | null {
   if (isForeignReasoningError(message))
     return sourceText("error.provider.foreignReasoning", { provider: providerLabel(provider) });
@@ -210,7 +238,9 @@ export function refusedSessionFailure(
   if (isImageTooLargeDiagnostic(message))
     return sourceText("error.provider.imageTooLarge", { provider: providerLabel(provider) });
   if (isImageCountDiagnostic(message))
-    return sourceText("error.provider.imageCountLimit", { provider: providerLabel(provider) });
+    return imageLimitRepeated
+      ? sourceText("error.provider.imageCountLimitRepeated")
+      : sourceText("error.provider.imageCountLimit", { provider: providerLabel(provider) });
   if (isImageUnreadableDiagnostic(message) || isUnsendableOpenCodeMedia(provider, message))
     return sourceText("error.provider.imageUnreadable", { provider: providerLabel(provider) });
   if (isRequestBodyLimitDiagnostic(message))
@@ -220,13 +250,18 @@ export function refusedSessionFailure(
   if (isRejectedOpenCodeRequest(provider, message)) return sourceText("error.provider.opencodeSessionRejected");
   if (isRefusedOpenCodeInput(provider, message)) return sourceText("error.provider.opencodeInputRefused");
   if (isRejectedAntigravityRequest(provider, message)) return sourceText("error.provider.antigravitySessionRejected");
-  if (isClearedAntigravityHistory(provider, message) || isUnencodableAntigravityHistory(provider, message))
+  if (
+    isClearedAntigravityHistory(provider, message) ||
+    isUnreadableAntigravityHistory(provider, message) ||
+    isUnsignedAntigravityThinking(provider, message)
+  )
     return sourceText("error.provider.antigravityHistoryUnreadable");
   if (isStuckAcpTurn(provider, message))
     return sourceText("error.provider.acpTurnStuck", { provider: providerLabel(provider) });
   if (isFailedOpenCodeCompaction(provider, message)) return openCodeCompactionFailure(contextWindow);
   if (isMuseMcpStartupFault(provider, message)) return sourceText("error.provider.museMcpStartupFault");
   if (isMissingClaudeSession(provider, message)) return sourceText("error.provider.claudeSessionMissing");
+  if (isMissingOpenCodeSession(provider, message)) return sourceText("error.provider.opencodeSessionMissing");
   if (isClaudeContextOverflow(provider, message)) return sourceText("error.provider.claudeContextFull");
   if (isPiContextOverflow(provider, message))
     return sourceText("error.provider.requestTooLarge", { provider: providerLabel(provider) });
@@ -386,9 +421,29 @@ export function toolUsage(item: ThreadItem): ToolUsage | null {
   return { kind: "mcp", server: mcp[1], tool: mcp[2], failed };
 }
 
+const ACP_MCP_TITLE = /^Run mcp_(.+?)\??$/u;
+
+function acpBridgedTool(item: ThreadItem) {
+  if (item.type !== "toolCall" || getString(item, "toolKind") === null) return undefined;
+  const args = getRecord(item, "arguments");
+  const server = getString(args, "ServerName");
+  const tool = getString(args, "ToolName");
+  const title = ACP_MCP_TITLE.exec(getString(item, "name") ?? "")?.[1];
+  const named = server && tool ? `${server}_${tool}` : title;
+  if (!named) return undefined;
+  if (named === "openbot_tool_call") {
+    const input = server && tool ? getRecord(args, "Arguments") : args;
+    const called = getString(input, "name") ?? getString(input, "tool");
+    return called ? BUILTIN_TOOL_CATALOG.find((entry) => entry.name === qualifiedToolName(called)) : undefined;
+  }
+  return server && tool
+    ? BUILTIN_TOOL_CATALOG.find((entry) => entry.namespace === server && entry.tool === tool)
+    : BUILTIN_TOOL_CATALOG.find((entry) => `${entry.namespace}_${entry.tool}` === named);
+}
+
 function bridgedTool(item: ThreadItem) {
   const name = bridgedToolName(item);
-  return name ? BUILTIN_TOOL_CATALOG.find((entry) => entry.name === name) : undefined;
+  return name ? BUILTIN_TOOL_CATALOG.find((entry) => entry.name === name) : acpBridgedTool(item);
 }
 
 const TOOL_RESULT_PROGRESS = sourceText("status.agent.toolResultReviewing");
@@ -396,6 +451,8 @@ const TOOL_RESULT_PROGRESS = sourceText("status.agent.toolResultReviewing");
 export function openBotTool(item: ThreadItem): string | null {
   const bridged = bridgedToolName(item);
   if (bridged) return bridged.startsWith("openbot.") ? bridged.slice("openbot.".length) : null;
+  const acp = acpBridgedTool(item);
+  if (acp) return acp.namespace === "openbot" ? acp.tool : null;
   if (item.type === "toolCall") return /^mcp__openbot__(.+)$/u.exec(getString(item, "name") ?? "")?.[1] ?? null;
   if (item.type === "mcpToolCall" && getString(item, "server") !== "openbot") return null;
   return item.type === "dynamicToolCall" || item.type === "mcpToolCall" ? getString(item, "tool") : null;
@@ -428,6 +485,8 @@ function browserProgressText(tool: string): string {
     case "fill_fields":
     case "press":
       return sourceText("status.agent.browserTyping");
+    case "request_near_payment":
+      return sourceText("status.agent.browserPaying");
     default:
       return sourceText("status.agent.browserActing");
   }

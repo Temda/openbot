@@ -20,6 +20,7 @@ export const messages = {
   "error.messaging.whatsappUnsupported": "这台电脑无法连接 WhatsApp。",
   "error.messaging.whatsappTooManySenders": "一个 WhatsApp 号码最多可允许 200 个联系人和群组。",
   "error.messaging.whatsappNumberNotFound": "此号码没有 WhatsApp 账号。请连同国家代码一起输入，例如 +44 7700 900123。",
+  "error.messaging.whatsappSenderNotFound": "此联系人或群组已不在列表中。",
   "error.messaging.whatsappRequestEnded": "该请求已结束。请让对方重新发消息以获取新代码。",
   "error.messaging.lineNotConnected": "该 LINE 账号未连接。",
   "error.messaging.lineUnsupported": "这台电脑无法连接 LINE。",

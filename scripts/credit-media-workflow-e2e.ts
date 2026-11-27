@@ -2,7 +2,11 @@ import { randomUUID } from "node:crypto";
 import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
-import type { CreditMediaJobRequest, CreditMediaModel } from "@openbot/contracts/credit-media";
+import type {
+  CreditMediaFailureReason,
+  CreditMediaJobRequest,
+  CreditMediaModel,
+} from "@openbot/contracts/credit-media";
 import {
   isWorkflowMediaCatalogModel,
   type WorkflowMediaKind,
@@ -95,17 +99,33 @@ const MODELS: CreditMediaModel[] = [
 const submits: { request: CreditMediaJobRequest; inputs: readonly CreditMediaUpload[] }[] = [];
 const stored: { name: string; mimeType: string; bytes: number }[] = [];
 let submitFailure: CreditMediaGatewayFailed | null = null;
+let refusal: { reason: CreditMediaFailureReason | null } | null = null;
 let jobLookups = 0;
 
 const gateway: CreditMediaGateway = {
   available: () => true,
-  catalog: () => Effect.succeed({ models: MODELS }),
+  catalog: () =>
+    Effect.succeed({
+      models: MODELS,
+      unavailable: [{ id: "kling-omni", kind: "video" as const, name: "Kling 4.0", variant: "Omni" }],
+    }),
   balance: () => Effect.succeed({ wallet: "personal", available: 100 }),
   submit: (request, inputs) =>
     Effect.suspend(() => (submitFailure ? Effect.fail(submitFailure) : Effect.void)).pipe(
       Effect.map(() => {
         submits.push({ request, inputs });
         const kind = MODELS.find((entry) => entry.id === request.model)?.kind;
+        if (refusal)
+          return {
+            jobId: request.jobId,
+            model: request.model,
+            status: "failed" as const,
+            credits: 0,
+            pollAfterSeconds: 0,
+            outputs: [],
+            failure: "refused" as const,
+            reason: refusal.reason,
+          };
         return {
           jobId: request.jobId,
           model: request.model,
@@ -122,6 +142,7 @@ const gateway: CreditMediaGateway = {
             },
           ],
           failure: null,
+          reason: null,
         };
       }),
     ),
@@ -182,8 +203,16 @@ async function generate(request: Omit<CreditMediaRequest, "model" | "jobId" | "e
 }
 
 async function flow() {
-  const catalog = await Effect.runPromise(workflows.catalog());
+  const listed = await Effect.runPromise(workflows.catalog());
+  const catalog = listed.models;
   const entry = (id: string) => catalog.find((item) => item.id === `openbot-${id}`);
+  check(
+    "a model with no route stays by workflow id and full name, apart from the models that can run",
+    JSON.stringify(listed.unavailable) ===
+      JSON.stringify([{ id: "openbot-kling-omni", name: "Kling 4.0 · Omni", kinds: ["video"] }]) &&
+      entry("kling-omni") === undefined,
+    { unavailable: listed.unavailable },
+  );
   const imageText = entry("image-text");
   const videoBoth = entry("video-both");
   check(
@@ -439,6 +468,23 @@ async function flow() {
       stored.some((file) => file.name === "openbot-video.mp4" && file.mimeType === "video/mp4") &&
       stored.some((file) => file.name === "openbot-image.png" && file.mimeType === "image/png"),
     stored,
+  );
+  const refusedFor = async (reason: CreditMediaFailureReason | null) => {
+    refusal = { reason };
+    try {
+      return (await generate({ kind: "image", model: "image-text", prompt: "A boat", specs: specs(), images: [] }))
+        .failure;
+    } finally {
+      refusal = null;
+    }
+  };
+  const contentRefused = await refusedFor("content_policy");
+  const otherRefused = await refusedFor(null);
+  check(
+    "a job that the model refused for content safety says why; another refused job keeps the general text",
+    contentRefused === sourceText("error.billing.mediaContentRefused") &&
+      otherRefused === sourceText("error.billing.mediaRequestRefused"),
+    { contentRefused, otherRefused },
   );
 }
 

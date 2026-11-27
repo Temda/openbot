@@ -14,6 +14,11 @@ import {
   WORKFLOW_FOLDERS_CAPABILITY,
   WORKFLOW_FOLDERS_ROUTES,
 } from "@openbot/contracts/team-protocol/workflow-folders-v1";
+import { decodeWorkflowSpotInput, type WorkflowSpotInput } from "@openbot/contracts/team-protocol/workflow-presence-v1";
+import {
+  WORKFLOWS_CREDIT_MEDIA_UNAVAILABLE_CAPABILITY,
+  WORKFLOWS_CREDIT_MEDIA_UNAVAILABLE_ROUTES,
+} from "@openbot/contracts/team-protocol/workflows-credit-media-unavailable-v1";
 import {
   WORKFLOWS_CREDIT_MEDIA_CAPABILITY,
   WORKFLOWS_CREDIT_MEDIA_ROUTES,
@@ -77,6 +82,7 @@ import {
   decodeRemoteWorkflowMediaCredits,
   decodeRemoteWorkflowMediaPrice,
   decodeRemoteWorkflowMediaProviders,
+  decodeRemoteWorkflowMediaUnavailable,
   decodeRemoteWorkflowPicture,
   decodeRemoteWorkflowRunDetail,
   decodeRemoteWorkflowRunPage,
@@ -91,7 +97,7 @@ import {
   workflowMediaProvidersOf,
 } from "@openbot/team-client/workflow-decoding";
 import type { Effect } from "effect";
-import { app, type BrowserWindow, dialog, type SaveDialogOptions } from "electron";
+import { app, type BrowserWindow, dialog, type SaveDialogOptions, type WebContents } from "electron";
 import { runCauseEffect } from "../../backend/effect-boundary";
 import type { WorkflowsHandle } from "../../backend/workflows/workflows";
 import type { WorkflowGitHubDirectory } from "../github-rest";
@@ -101,7 +107,9 @@ import type { RemoteRequestInit } from "../remote-server-client";
 import type { RemoteWorkflowError } from "../remote-service-effects";
 import type { WorkflowFileExporter } from "../workflow-file-export";
 import type { WorkflowFoldersService } from "../workflow-folders-service";
-import type { IpcGroupHandlers } from "./define-ipc-group";
+import { agentRequest } from "./agent-inputs";
+import { eventPayloadHandler, type IpcGroupHandlers } from "./define-ipc-group";
+import { routeToServer } from "./route-to-server";
 import { scopedHandler, scopedQueryHandler } from "./scoped-handler";
 import {
   parseCreateWorkflow,
@@ -136,6 +144,7 @@ interface WorkflowRemoteServers {
       | typeof WORKFLOWS_MEDIA_CATALOG_CAPABILITY
       | typeof WORKFLOWS_MEDIA_CATALOG_V2_CAPABILITY
       | typeof WORKFLOWS_CREDIT_MEDIA_CAPABILITY
+      | typeof WORKFLOWS_CREDIT_MEDIA_UNAVAILABLE_CAPABILITY
       | typeof WORKFLOWS_MEDIA_SERVICE_ACCOUNT_CAPABILITY
       | typeof WORKFLOWS_STEP_SETTINGS_CAPABILITY
       | typeof WORKFLOWS_PAUSE_CAPABILITY
@@ -149,10 +158,16 @@ interface WorkflowRemoteServers {
     init?: RemoteRequestInit,
   ): Effect.Effect<T, RemoteWorkflowError>;
   downloadAttachment(attachmentId: string, serverId: string): Effect.Effect<{ bytes: Uint8Array }, RemoteWorkflowError>;
+  setWorkflowSpot(serverId: string, input: WorkflowSpotInput): Effect.Effect<void>;
+}
+
+interface WorkflowSpotHost {
+  setWorkflowSpot(input: WorkflowSpotInput): void;
 }
 
 interface WorkflowIpcDependencies {
   workflows: WorkflowsHandle;
+  host: WorkflowSpotHost;
   events: Pick<HostEventsService, "rotateWorkflowSecret">;
   github: WorkflowGitHubDirectory;
   workflowFolders: Pick<WorkflowFoldersService, "read" | "change">;
@@ -164,6 +179,7 @@ interface WorkflowIpcDependencies {
 
 export function workflowIpcHandlers({
   workflows,
+  host,
   events,
   github,
   workflowFolders,
@@ -172,6 +188,12 @@ export function workflowIpcHandlers({
   getMainWindow,
   translate,
 }: WorkflowIpcDependencies): Pick<IpcGroupHandlers, "workflows"> {
+  const spotWindows = workflowSpotWindows((serverId, input) =>
+    routeToServer(serverId, {
+      local: () => host.setWorkflowSpot(input),
+      remote: (target) => runCauseEffect(remoteServers.setWorkflowSpot(target, input)),
+    }),
+  );
   function remote<T>(serverId: string, path: string, decoder: ResponseDecoder<T>, body: unknown): Promise<T> {
     if (!remoteServers.supportsCapability(serverId, WORKFLOWS_CAPABILITY))
       throw new Error(sourceText("error.workflow.serverTooOld"));
@@ -380,13 +402,24 @@ export function workflowIpcHandlers({
       mediaCatalog: scopedQueryHandler({
         local: () => runCauseEffect(workflows.mediaCatalog()),
         remote: async (serverId) => {
-          const [credit, services] = await Promise.all([
+          const [credit, services, unavailable] = await Promise.all([
             creditMedia(serverId)
               ? remote(serverId, WORKFLOWS_CREDIT_MEDIA_ROUTES.catalog, decodeRemoteWorkflowMediaCatalog, {})
               : { models: [] },
             serviceCatalog(serverId),
+            remoteServers.supportsCapability(serverId, WORKFLOWS_CREDIT_MEDIA_UNAVAILABLE_CAPABILITY)
+              ? remote(
+                  serverId,
+                  WORKFLOWS_CREDIT_MEDIA_UNAVAILABLE_ROUTES.list,
+                  decodeRemoteWorkflowMediaUnavailable,
+                  {},
+                ).catch(() => [])
+              : [],
           ]);
-          return { models: [...credit.models, ...services.models].slice(0, WORKFLOW_MEDIA_CATALOG_MAX) };
+          return {
+            models: [...credit.models, ...services.models].slice(0, WORKFLOW_MEDIA_CATALOG_MAX),
+            ...(unavailable.length > 0 ? { unavailable } : {}),
+          };
         },
       }),
       mediaPrice: scopedHandler(parseWorkflowMediaPrice, {
@@ -406,6 +439,9 @@ export function workflowIpcHandlers({
         local: (action) => runCauseEffect(workflowFolders.change(action)),
         remote: (action, serverId) => remoteFolders(serverId, WORKFLOW_FOLDERS_ROUTES.actions, action),
       }),
+      setSpot: eventPayloadHandler(agentRequest(decodeWorkflowSpotInput), (event, { serverId, payload }) =>
+        spotWindows.set(event.sender, serverId, payload),
+      ),
     },
   };
 
@@ -462,4 +498,65 @@ export function workflowIpcHandlers({
       return remote(serverId, WORKFLOWS_MEDIA_CATALOG_ROUTES.catalog, decodeRemoteWorkflowMediaCatalog, {});
     return Promise.resolve({ models: [] });
   }
+}
+
+interface WindowSpot {
+  readonly input: WorkflowSpotInput;
+  readonly order: number;
+}
+
+const LEAVE_WORKFLOW_SPOT: WorkflowSpotInput = { workflowId: null, at: null, selected: null };
+
+function workflowSpotWindows(send: (serverId: string, input: WorkflowSpotInput) => Promise<void>) {
+  const servers = new Map<string, Map<number, WindowSpot>>();
+  const watched = new WeakSet<WebContents>();
+  let order = 0;
+  const newest = (spots: ReadonlyMap<number, WindowSpot>): number | null => {
+    let winner: number | null = null;
+    let winnerOrder = -1;
+    for (const [windowId, spot] of spots)
+      if (spot.order > winnerOrder) {
+        winner = windowId;
+        winnerOrder = spot.order;
+      }
+    return winner;
+  };
+  const remove = (serverId: string, windowId: number): Promise<void> => {
+    const spots = servers.get(serverId) ?? new Map<number, WindowSpot>();
+    const before = newest(spots);
+    spots.delete(windowId);
+    if (spots.size === 0) servers.delete(serverId);
+    const after = newest(spots);
+    if (after !== null && before !== windowId) return Promise.resolve();
+    return send(serverId, (after === null ? undefined : spots.get(after)?.input) ?? LEAVE_WORKFLOW_SPOT);
+  };
+  const watch = (owner: WebContents) => {
+    if (watched.has(owner)) return;
+    watched.add(owner);
+    const windowId = owner.id;
+    owner.once("destroyed", () => {
+      for (const serverId of [...servers.keys()])
+        if (servers.get(serverId)?.has(windowId)) void remove(serverId, windowId).catch(() => undefined);
+    });
+  };
+  return {
+    set(owner: WebContents, serverId: string, input: WorkflowSpotInput): Promise<void> {
+      watch(owner);
+      if (input.workflowId === null) return remove(serverId, owner.id);
+      const spots = servers.get(serverId) ?? new Map<number, WindowSpot>();
+      servers.set(serverId, spots);
+      const known = spots.get(owner.id);
+      spots.set(owner.id, { input, order: known && sameSpotInput(known.input, input) ? known.order : ++order });
+      return newest(spots) === owner.id ? send(serverId, input) : Promise.resolve();
+    },
+  };
+}
+
+function sameSpotInput(current: WorkflowSpotInput, next: WorkflowSpotInput): boolean {
+  return (
+    current.workflowId === next.workflowId &&
+    current.selected === next.selected &&
+    current.at?.x === next.at?.x &&
+    current.at?.y === next.at?.y
+  );
 }

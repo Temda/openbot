@@ -1,3 +1,4 @@
+import { providerCliSource } from "@openbot/contracts/cli-version";
 import {
   type AcpRegistryEntry,
   type AcpRegistryInstallInput,
@@ -31,6 +32,7 @@ import {
   type PromptCacheTtlSetting,
   type ProviderAccountCodeLoginStart,
   type ProviderAccountCodeLoginStatus,
+  type ProviderAccountPoolStrategy,
   type ProviderApiKeyStatus,
   type ProviderCodeLoginStart,
   type ProviderEnvironment,
@@ -49,6 +51,7 @@ import {
 import { isOneOf } from "@openbot/contracts/runtime-values";
 import { TEAM_API_ROUTES } from "@openbot/contracts/team-api-routes";
 import { ACP_REGISTRY_CAPABILITY, ACP_REGISTRY_ROUTES } from "@openbot/contracts/team-protocol/acp-registry-v1";
+import { ANTIGRAVITY_CODE_SIGN_IN_CAPABILITY } from "@openbot/contracts/team-protocol/antigravity-code-sign-in-v1";
 import { CACHE_EXPIRY_COMPACTION_CAPABILITY } from "@openbot/contracts/team-protocol/cache-expiry-compaction-v1";
 import { CLAUDE_API_KEY_CAPABILITY } from "@openbot/contracts/team-protocol/claude-api-key-v1";
 import { CLAUDE_COMPACT_WINDOW_CAPABILITY } from "@openbot/contracts/team-protocol/claude-compact-window-v1";
@@ -71,6 +74,7 @@ import {
 } from "@openbot/contracts/team-protocol/prompt-cache-ttl-v1";
 import { PROVIDER_ACCOUNT_CODE_CAPABILITY } from "@openbot/contracts/team-protocol/provider-account-code-v1";
 import { PROVIDER_ACCOUNT_KEYS_CAPABILITY } from "@openbot/contracts/team-protocol/provider-account-keys-v1";
+import { PROVIDER_ACCOUNT_POOL_STRATEGY_CAPABILITY } from "@openbot/contracts/team-protocol/provider-account-pool-strategy-v1";
 import { PROVIDER_ACCOUNT_POOL_CAPABILITY } from "@openbot/contracts/team-protocol/provider-account-pool-v1";
 import { providerAccountRelay } from "@openbot/contracts/team-protocol/provider-account-relays";
 import { PROVIDER_ACCOUNTS_CAPABILITY } from "@openbot/contracts/team-protocol/provider-accounts-v1";
@@ -178,7 +182,8 @@ function codeSignInProviders(capabilities: readonly string[]): readonly AgentPro
         (agentProviderDescriptor(provider).localCodeSignIn === "device" &&
           !isOneOf(PROVIDERS_V4_SIGN_IN_PROVIDERS, provider) &&
           !isOneOf(SIGN_IN_RELAY_PROVIDERS, provider)) ||
-        (provider === "mistral" && capabilities.includes(MISTRAL_CODE_SIGN_IN_CAPABILITY)),
+        (provider === "mistral" && capabilities.includes(MISTRAL_CODE_SIGN_IN_CAPABILITY)) ||
+        (provider === "antigravity" && capabilities.includes(ANTIGRAVITY_CODE_SIGN_IN_CAPABILITY)),
     );
   }
   if (capabilities.includes(PROVIDERS_SIGN_IN_V3_CAPABILITY)) return PROVIDERS_SIGN_IN_V3_PROVIDERS;
@@ -272,7 +277,7 @@ export function providerRows(
         raw &&
         (raw.phase === "ready" || raw.phase === "not-downloaded") &&
         (agent?.state === "available" || agent?.state === "sign-in-required") &&
-        (agent.cliSource === "system" || (raw.phase === "not-downloaded" && !raw.availableVersion))
+        (providerCliSource(agent, raw) === "system" || (raw.phase === "not-downloaded" && !raw.availableVersion))
           ? { ...raw, phase: "ready" as const, version: agent.version ?? null }
           : raw;
       const availableVersion = runtime?.availableVersion ?? null;
@@ -440,12 +445,25 @@ export function createProviderAdmin(request: TeamApiRequest, capabilities: reado
                 false,
                 has(PROVIDER_ACCOUNT_POOL_CAPABILITY),
                 has(LIVE_VOICE_ACCOUNT_CAPABILITY),
+                has(PROVIDER_ACCOUNT_POOL_STRATEGY_CAPABILITY),
               ),
             ),
           setPool: has(PROVIDER_ACCOUNT_POOL_CAPABILITY)
-            ? (provider: AgentProviderId, enabled: boolean, leftOut: readonly string[]): Promise<void> =>
-                runTeamRequest(setProviderAccountPool(request, { provider, enabled, leftOut: [...leftOut] }))
+            ? (
+                provider: AgentProviderId,
+                enabled: boolean,
+                leftOut: readonly string[],
+                strategy?: ProviderAccountPoolStrategy,
+              ): Promise<void> =>
+                runTeamRequest(
+                  setProviderAccountPool(
+                    request,
+                    { provider, enabled, leftOut: [...leftOut], ...(strategy ? { strategy } : {}) },
+                    has(PROVIDER_ACCOUNT_POOL_STRATEGY_CAPABILITY),
+                  ),
+                )
             : null,
+          poolStrategy: has(PROVIDER_ACCOUNT_POOL_CAPABILITY) && has(PROVIDER_ACCOUNT_POOL_STRATEGY_CAPABILITY),
           setLiveVoiceAccount: has(LIVE_VOICE_ACCOUNT_CAPABILITY)
             ? (accountId: string | null): Promise<void> => runTeamRequest(setLiveVoiceAccount(request, { accountId }))
             : null,

@@ -54,7 +54,7 @@ const LINE_MARK_PATH =
   "M12 2C6.48 2 2 5.6 2 10.05c0 3.9 3.45 7.18 8.1 7.8.32.07.75.21.86.48.1.25.07.64.03.9l-.14.84c-.04.25-.2.98.86.54 1.06-.44 5.7-3.36 7.78-5.75C20.9 13.2 22 11.7 22 10.05 22 5.6 17.52 2 12 2Z";
 
 const X_MARK_PATH =
-  "M17.5 3h3.2l-7 8 8.2 10h-6.4l-5-6.5L4.7 21H1.5l7.5-8.5L1.1 3h6.5l4.5 6 5.4-6Zm-1.1 16h1.8L7.6 4.9H5.7L16.4 19Z";
+  "m21.62 21.5-7.47-10.9 6.97-8.1H18.7l-5.62 6.54L8.6 2.5H2.48L9.68 13l-7.3 8.5H4.8l5.96-6.93 4.76 6.93zM7.8 4.03l10.93 15.94H16.3L5.38 4.03z";
 
 export function LineMark(props: { class?: string | undefined }) {
   return (
@@ -90,6 +90,14 @@ export function SlackTile() {
       {parts.map((d, index) => (
         <path d={d} fill={SLACK_ARM_COLORS[Math.floor(index / 2)]} />
       ))}
+    </BrandTile>
+  );
+}
+
+export function XTile() {
+  return (
+    <BrandTile background="#000000">
+      <path d={X_MARK_PATH} fill="#FFFFFF" />
     </BrandTile>
   );
 }

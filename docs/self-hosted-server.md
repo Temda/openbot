@@ -297,11 +297,14 @@ already in its server list. Remove a phone from the account in the desktop app, 
 `sudo openbot uninstall` signs out, then removes the service, the units, the AppArmor profile, the
 `openbot` command and the server files in `/opt/OpenBot`. It keeps the home folder of the service user
 and the keyring in `/srv/openbot-hosted`. The keyring has the key of the encrypted data in that home
-folder, so keep or delete the two together. An install with the same `--user` uses them again. To
-delete the data too:
+folder, so keep or delete the two together. `/srv/openbot-keyring` has a copy of the keyring that only
+root can read: the server restores it when an agent damages the keyring (see
+[Keyring guard](hosted-servers.md#keyring-guard)). An install with the same `--user` uses them again.
+Before you put the data of another server on this computer, delete `/srv/openbot-keyring`. To delete
+the data too:
 
 ```sh
-sudo userdel --remove openbot && sudo rm -rf /srv/openbot-hosted
+sudo userdel --remove openbot && sudo rm -rf /srv/openbot-hosted /srv/openbot-keyring
 ```
 
 The server stays in the server list of the account, offline. Remove it there.
@@ -315,9 +318,15 @@ install steps always match the build that they install. A release before this fe
 file, and the install stops with a message.
 
 `openbot-server-setup` uses the install steps of a hosted server (`openbot-hosted-update`): it
-installs the packages in `packages.txt`, copies the release to `/opt/OpenBot/app`, and installs the
-scripts, the AppArmor profile and the units. It writes `self` to `/opt/OpenBot/hosted/mode` and
-links `/usr/local/bin/openbot`.
+installs the packages in `packages.txt` and `optional-packages.txt`, copies the release to
+`/opt/OpenBot/app`, and installs the scripts, the AppArmor profile and the units. It writes `self`
+to `/opt/OpenBot/hosted/mode` and links `/usr/local/bin/openbot`.
+
+apt never removes a package of the computer for OpenBot (`--no-remove`). When a package in
+`packages.txt` needs a removal, the install stops. A package in `optional-packages.txt` is skipped
+when a command with its name already exists, or when it needs a removal. For example, on Raspberry
+Pi OS `pcmanfm-pi` gives the `pcmanfm` command, and the `pcmanfm` package would remove the desktop
+of the Pi.
 
 The AppArmor profile (`/etc/apparmor.d/openbot-hosted`) needs AppArmor 4 (`abi <abi/4.0>` and the
 `userns` rule). When `/etc/apparmor.d/abi/4.0` does not exist and `apparmor_parser` cannot read the

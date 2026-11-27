@@ -464,7 +464,7 @@ try {
       assert.equal(connection(messaging)?.orchestratorAgentId, orchestratorId);
       await runCauseEffect(messaging.answerLineRequest(BOT_ID, ALICE, true));
       const rows = agents.messaging.store.allowedSenders(connectionId(agents));
-      assert.deepEqual(rows, [{ id: ALICE, kind: "contact", name: "Alice" }]);
+      assert.deepEqual(rows, [{ id: ALICE, kind: "contact", name: "Alice", readOnly: false }]);
       return { rows, orchestratorId };
     });
 

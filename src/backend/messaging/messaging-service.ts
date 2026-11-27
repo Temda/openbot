@@ -77,6 +77,7 @@ import {
   type IngressAnswer,
   type IngressDelivery,
   type IngressState,
+  type MessageBody,
   type MessageTarget,
   type MessagingAdapter,
   type MessagingAdapterError,
@@ -421,6 +422,16 @@ export class MessagingService {
   ) {
     const whatsapp = yield* messagingStep(() => this.#requireWhatsApp());
     yield* whatsapp.removeSender(workspaceId, senderId).pipe(toMessagingOperationFailed);
+  }).bind(this);
+
+  readonly setWhatsAppSenderReadOnly = Effect.fn("MessagingService.setWhatsAppSenderReadOnly")(function* (
+    this: MessagingService,
+    workspaceId: string,
+    senderId: string,
+    readOnly: boolean,
+  ) {
+    const whatsapp = yield* messagingStep(() => this.#requireWhatsApp());
+    yield* whatsapp.setSenderReadOnly(workspaceId, senderId, readOnly).pipe(toMessagingOperationFailed);
   }).bind(this);
 
   readonly answerWhatsAppRequest = Effect.fn("MessagingService.answerWhatsAppRequest")(function* (
@@ -1561,9 +1572,13 @@ export class MessagingService {
           if (result.status === "duplicate") return;
           const key = `${result.link.linkId}:${message.platformMessageId}`;
           if (result.status === "busy") {
-            yield* adapter
-              .post(message.target, { text: sourceText("status.messaging.busy") })
-              .pipe(toMessagingOperationFailed);
+            if (
+              !this.#quietEnd(live.record.connectionId, message.target) &&
+              !this.#withoutStatusPost(live.record.connectionId)
+            )
+              yield* adapter
+                .post(message.target, { text: sourceText("status.messaging.busy") })
+                .pipe(toMessagingOperationFailed);
             yield* this.#react(live, message.target, message.platformMessageId, "failed", true);
             return;
           }
@@ -1576,7 +1591,8 @@ export class MessagingService {
                 if (
                   this.#posts.has(key) ||
                   !this.#targets.has(key) ||
-                  this.#withoutStatusPost(live.record.connectionId)
+                  this.#withoutStatusPost(live.record.connectionId) ||
+                  this.#quietEnd(live.record.connectionId, message.target)
                 )
                   return;
                 const messageId = yield* adapter
@@ -1951,18 +1967,33 @@ export class MessagingService {
     const post = this.#posts.get(key);
     if (activity.type === "progress") {
       if (!live || !post?.messageId || !post.stopToken || post.final) return;
+      const messageId = post.messageId;
       const text = redactPostText(activity.text).replace(MENTION_MARKERS, "");
-      yield* live.adapter
-        .edit(target, post.messageId, {
-          text: text.length > PROGRESS_TEXT_LIMIT ? `${text.slice(0, PROGRESS_TEXT_LIMIT - 1)}…` : text,
-          buttons: [{ action: "stop" as const, label: sourceText("status.messaging.stop"), token: post.stopToken }],
-        })
-        .pipe(Effect.catch((failure) => Effect.sync(() => this.#warn(failure.cause))));
+      const shown = yield* this.#replaceStatus(live.adapter, target, messageId, {
+        text: text.length > PROGRESS_TEXT_LIMIT ? `${text.slice(0, PROGRESS_TEXT_LIMIT - 1)}…` : text,
+        buttons: [{ action: "stop" as const, label: sourceText("status.messaging.stop"), token: post.stopToken }],
+      }).pipe(
+        Effect.catch((failure) =>
+          Effect.sync(() => {
+            this.#warn(failure.cause);
+            return messageId;
+          }),
+        ),
+      );
+      if (shown !== messageId && this.#posts.get(key) === post) {
+        this.#posts.set(key, { ...post, messageId: shown });
+        yield* this.#status.save();
+      }
       return;
     }
     if (activity.type === "started") {
       if (!live) return;
-      if (!post?.messageId && (activity.teammateRequest || this.#withoutStatusPost(live.record.connectionId))) {
+      if (
+        !post?.messageId &&
+        (activity.teammateRequest ||
+          this.#withoutStatusPost(live.record.connectionId) ||
+          this.#quietEnd(live.record.connectionId, target))
+      ) {
         this.#posts.set(key, { connectionId: live.record.connectionId, target, messageId: null, stopToken: null });
         this.#status.restored.delete(key);
         yield* this.#status.save();
@@ -1983,10 +2014,7 @@ export class MessagingService {
       this.#posts.set(key, { connectionId: live.record.connectionId, target, messageId: existingMessageId, stopToken });
       this.#status.restored.delete(key);
       const messageId = existingMessageId
-        ? yield* live.adapter
-            .edit(target, existingMessageId, body)
-            .pipe(toMessagingOperationFailed)
-            .pipe(Effect.as(existingMessageId))
+        ? yield* this.#replaceStatus(live.adapter, target, existingMessageId, body).pipe(toMessagingOperationFailed)
         : yield* live.adapter.post(target, body).pipe(toMessagingOperationFailed);
       this.#posts.set(key, { connectionId: live.record.connectionId, target, messageId, stopToken });
       yield* this.#status.save();
@@ -2065,8 +2093,10 @@ export class MessagingService {
         Effect.gen({ self: this }, function* () {
           const cause = failure instanceof MessagingOperationFailed ? failure.cause : null;
           const partlySent = cause instanceof WhatsAppAnswerPartlySent;
-          if ((partlySent ? cause.cause : cause) instanceof WhatsAppRefusedError)
+          if ((partlySent ? cause.cause : cause) instanceof WhatsAppRefusedError) {
+            if (final.answer || final.replacesAnswer) this.#noteUndelivered(key, final.answer && partlySent);
             return yield* this.#forgetPost(key, post);
+          }
           const quiet = final.answer && this.#quietEnd(live.record.connectionId, post.target);
           if (quiet && partlySent) return yield* this.#forgetPost(key, post);
           const failures = (this.#finalFailures.get(key) ?? 0) + 1;
@@ -2075,7 +2105,12 @@ export class MessagingService {
           if (final.answer) {
             current = {
               ...post,
-              final: { answer: false, text: quiet ? "" : sourceText("status.messaging.failed"), reaction: null },
+              final: {
+                answer: false,
+                text: quiet ? "" : sourceText("status.messaging.failed"),
+                reaction: null,
+                replacesAnswer: true,
+              },
             };
             this.#posts.set(key, current);
             yield* this.#status.save();
@@ -2087,6 +2122,17 @@ export class MessagingService {
     );
     yield* this.#forgetPost(key, post);
   });
+
+  #noteUndelivered(key: string, partlySent: boolean): void {
+    try {
+      this.#threads.noteUndelivered(
+        key.slice(0, key.indexOf(":")),
+        sourceText(partlySent ? "status.messaging.whatsappPartlyDelivered" : "status.messaging.whatsappNotDelivered"),
+      );
+    } catch (error) {
+      this.#warn(error, "Could not mark a WhatsApp answer as not delivered.");
+    }
+  }
 
   readonly #forgetPost = Effect.fn("MessagingService.forgetPost")(function* (
     this: MessagingService,
@@ -2145,8 +2191,24 @@ export class MessagingService {
     placeholder: string | null,
     text: string,
   ) {
-    if (placeholder) yield* adapter.edit(target, placeholder, { text }).pipe(toMessagingOperationFailed);
+    if (placeholder)
+      yield* this.#replaceStatus(adapter, target, placeholder, { text }).pipe(toMessagingOperationFailed);
     else yield* adapter.post(target, { text }).pipe(toMessagingOperationFailed);
+  });
+
+  readonly #replaceStatus = Effect.fn("MessagingService.replaceStatus")(function* (
+    this: MessagingService,
+    adapter: MessagingAdapter,
+    target: MessageTarget,
+    messageId: string,
+    body: MessageBody,
+  ) {
+    const shown = yield* adapter.edit(target, messageId, body);
+    if (shown !== messageId && adapter.remove)
+      yield* adapter
+        .remove(target, messageId)
+        .pipe(Effect.catch((failure) => Effect.sync(() => this.#warn(failure.cause))));
+    return shown;
   });
 
   #dispatch<A>(operation: Effect.Effect<A, MessagingOperationFailed>): void {
@@ -2466,7 +2528,7 @@ function redactEmbed(embed: DiscordEmbed): DiscordEmbed {
 }
 
 const WHATSAPP_ALLOWED_PLACES =
-  "This list has only the WhatsApp chats that the user allowed, not all chats of this number. For a chat that is not in it, tell the user to open Marketplace, then Apps, then WhatsApp, and to use Add contact or Add group for this number.";
+  "This list has only the WhatsApp chats that the user allowed, not all chats of this number. For a chat that is not in it, tell the user to open Marketplace, then Apps, then WhatsApp, and to use Add contact or Add group for this number. A place with readOnly is read only: read its history, but OpenBot cannot post in it.";
 
 const LINE_ALLOWED_PLACES =
   "This list has only the LINE users that the user allowed, not all friends of this Official Account. For a person who is not in it, tell the user to open Marketplace, then Apps, then LINE, and to approve the request of that person.";
@@ -2501,6 +2563,14 @@ const WHATSAPP_LOCAL_REFUSALS = new Map([
   [
     "place_not_allowed",
     "OpenBot sent nothing: the user did not allow this WhatsApp chat. Tell the user to open Marketplace, then Apps, then WhatsApp, and to use Add contact or Add group for this chat. Then the post can go to it.",
+  ],
+  [
+    "place_read_only",
+    "OpenBot sent nothing: the user made this WhatsApp chat read only. OpenBot reads it but never posts in it. Do not post it again: give the result in the conversation that you answer.",
+  ],
+  [
+    "no_account",
+    `OpenBot sent nothing: WhatsApp has no account for the number of this contact. Tell the user to open Marketplace, then Apps, then WhatsApp, and to check the number of this contact. ${sourceText("error.messaging.whatsappNumberNotFound")} When the number is not correct, the user must remove the contact and add it again.`,
   ],
   ["not_connected", WHATSAPP_NOT_CONNECTED],
   ["not_linked", WHATSAPP_NOT_CONNECTED],

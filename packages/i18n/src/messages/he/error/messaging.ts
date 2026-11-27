@@ -24,6 +24,7 @@ export const messages = {
   "error.messaging.whatsappTooManySenders": "מספר WhatsApp יכול לאשר עד 200 אנשי קשר וקבוצות.",
   "error.messaging.whatsappNumberNotFound":
     "למספר הזה אין חשבון WhatsApp. יש להקליד אותו עם קידומת המדינה, למשל +44 7700 900123.",
+  "error.messaging.whatsappSenderNotFound": "איש הקשר או הקבוצה האלה כבר לא ברשימה.",
   "error.messaging.whatsappRequestEnded": "הבקשה הזו הסתיימה. יש לבקש מהאדם לכתוב שוב כדי לקבל קוד חדש.",
   "error.messaging.lineNotConnected": "חשבון ה-LINE הזה אינו מחובר.",
   "error.messaging.lineUnsupported": "המחשב הזה אינו יכול להתחבר ל-LINE.",

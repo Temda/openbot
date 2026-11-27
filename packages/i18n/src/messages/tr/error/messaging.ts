@@ -24,6 +24,7 @@ export const messages = {
   "error.messaging.whatsappTooManySenders": "Bir WhatsApp numarası en fazla 200 kişiye ve gruba izin verebilir.",
   "error.messaging.whatsappNumberNotFound":
     "Bu numaranın WhatsApp hesabı yok. Numarayı ülke koduyla yazın, örneğin +44 7700 900123.",
+  "error.messaging.whatsappSenderNotFound": "Bu kişi veya grup artık listede değil.",
   "error.messaging.whatsappRequestEnded": "Bu istek sona erdi. Yeni bir kod için kişiden tekrar yazmasını isteyin.",
   "error.messaging.lineNotConnected": "Bu LINE hesabı bağlı değil.",
   "error.messaging.lineUnsupported": "Bu bilgisayar LINE'a bağlanamıyor.",

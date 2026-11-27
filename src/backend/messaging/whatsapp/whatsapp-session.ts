@@ -143,6 +143,7 @@ export interface WhatsAppSessionOptions {
   pairing?: boolean;
   fetchVersion?: () => Promise<WAVersion | null>;
   now?: () => number;
+  readOnly?: (jid: string) => boolean;
 }
 
 type UpsertListener = (event: { messages: WAMessage[]; type: string }) => void;
@@ -156,6 +157,7 @@ export class WhatsAppSession {
   #pairing: boolean;
   readonly #fetchVersion: () => Promise<WAVersion | null>;
   readonly #now: () => number;
+  readonly #readOnly: (jid: string) => boolean;
   readonly #stateListeners = new Set<(state: WhatsAppSessionState) => void>();
   readonly #upsertListeners = new Set<UpsertListener>();
   readonly #unread: Array<{ messages: WAMessage[]; type: string }> = [];
@@ -178,6 +180,7 @@ export class WhatsAppSession {
   #restartedOnce = false;
   #codeShown = false;
   #openedAt = 0;
+  #socketOpenedAt = 0;
   #historySent = false;
   #historySentAtOpen = false;
   #lastFrameAt = 0;
@@ -192,6 +195,7 @@ export class WhatsAppSession {
     this.#pairing = options.pairing ?? false;
     this.#fetchVersion = options.fetchVersion ?? webVersion;
     this.#now = options.now ?? Date.now;
+    this.#readOnly = options.readOnly ?? (() => false);
   }
 
   get state(): WhatsAppSessionState {
@@ -404,6 +408,7 @@ export class WhatsAppSession {
     }
     if (update.connection === "open") {
       this.#openedAt = this.#now();
+      this.#socketOpenedAt = this.#openedAt;
       this.#historySentAtOpen = this.#historySent;
       if (this.#store.linked) this.#historySent = true;
       this.#lastFrameAt = this.#openedAt;
@@ -415,7 +420,7 @@ export class WhatsAppSession {
     if (update.connection !== "close") return;
     const code = statusCode(update.lastDisconnect?.error);
     const decision = closeDecision(code, this.#pairing && !this.#store.linked, this.#restartedOnce, this.#codeShown);
-    if (this.#openedAt && this.#now() - this.#openedAt >= STABLE_MS) this.#attempt = 0;
+    if (this.#socketOpenedAt && this.#now() - this.#socketOpenedAt >= STABLE_MS) this.#attempt = 0;
     this.#dropSocket();
     const error = update.lastDisconnect?.error;
     logger.warn("A WhatsApp socket closed.", {
@@ -492,6 +497,7 @@ export class WhatsAppSession {
     if (this.#watchdog) clearInterval(this.#watchdog);
     this.#watchdog = null;
     this.#handling.clear();
+    this.#socketOpenedAt = 0;
     const socket = this.#socket;
     this.#socket = null;
     if (!socket) return;
@@ -536,6 +542,7 @@ export class WhatsAppSession {
       const address = this.#postChat(content) ?? (await this.#address(socket, jid));
       const gap = CHAT_PACING_MS * (1 + Math.random() / 2) - (this.#now() - (this.#lastSend.get(jid) ?? 0));
       if (gap > 0) await new Promise((resume) => setTimeout(resume, gap));
+      if (this.#readOnly(jid)) throw new Error("place_read_only");
       messageId ??= generateMessageIDV2(socket.user?.id);
       this.#remember(messageId);
       const ack = this.#ackOf(messageId);
